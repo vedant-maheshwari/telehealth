@@ -488,21 +488,6 @@ DATABASE_URL = "mysql+pymysql://user:password@localhost/telehealth"
    - [ ] Set up health checks
    - [ ] Monitor database performance
 
-### Docker Production Deployment
-
-```bash
-# Build production image
-docker build -t telehealth:prod .
-
-# Run with environment variables
-docker run -d \
-  -p 80:8000 \
-  -e SECRET_KEY=your-production-secret \
-  -e DATABASE_URL=your-production-db-url \
-  --name telehealth-prod \
-  telehealth:prod
-```
-
 ##  Project Structure
 
 ```
