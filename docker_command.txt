@@ -1,7 +1,7 @@
 docker login
 
 docker buildx build \
-  --platform=all \
-  -t vedantm23/telehealth:v2 \
+  --platform=linux/amd64,linux/arm64 \
+  -t vedantm23/telehealth \
   --push \
   .
