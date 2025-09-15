@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Chat Room</title>
+  <style>
+    body { font-family: Arial; margin:0; display:flex; flex-direction:column; height:100vh; }
+    header { background:#1976d2; color:#fff; padding:10px; text-align:center; }
+    #messages { flex:1; padding:12px; overflow:auto; background:#f0f2f5; display:flex; flex-direction:column; gap:8px; }
+    .bubble { max-width:70%; padding:10px 14px; border-radius:12px; word-wrap:break-word; }
+    .self { align-self:flex-end; background:#1976d2; color:white; border-bottom-right-radius:2px; }
+    .other { align-self:flex-start; background:#eee; color:#111; border-bottom-left-radius:2px; }
+    .meta { font-size:0.75rem; color:#666; margin-top:6px; text-align:right; }
+    #inputRow { display:flex; padding:10px; background:white; border-top:1px solid #ddd; }
+    #txt { flex:1; padding:10px; border-radius:20px; border:1px solid #ccc; outline:none; }
+    #send { margin-left:8px; padding:10px 14px; border:none; background:#1976d2; color:#fff; border-radius:8px; }
+  </style>
+</head>
+<body>
+  <header>Chat Room</header>
+  <button onclick="goBack()" style="
+  padding: 8px 12px; 
+  background: #1976d2; 
+  color: white; 
+  border: none; 
+  border-radius: 6px; 
+  cursor: pointer;
+  margin: 10px;
+">⬅ Back</button>
+  <div id="messages"></div>
+  <div id="inputRow">
+    <input id="txt" placeholder="Type a message..." />
+    <button id="send">Send</button>
+  </div>
+
+  <script>
+     function goBack() {
+    const role = sessionStorage.getItem("role");
+    if (role === "doctor") {
+      window.location.href = "doctor_dashboard.html";
+    } else {
+      window.location.href = "patient_dashboard.html";
+    }
+  }
+    const token = sessionStorage.getItem("token");
+    const userId = Number(sessionStorage.getItem("user_id"));
+    const chatId = Number(new URLSearchParams(window.location.search).get("chatId"));
+    const messagesDiv = document.getElementById("messages");
+    const txt = document.getElementById("txt");
+    const sendBtn = document.getElementById("send");
+
+    if (!token || !chatId) { alert("Login and chatId required"); location.href = "login.html"; }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    function showMessage(msg) {
+      const b = document.createElement("div");
+      b.className = "bubble " + (Number(msg.sender_id) === userId ? "self" : "other");
+      let ts = "";
+      try {
+        ts = new Date(msg.timestamp).toLocaleString([], { hour:'2-digit', minute:'2-digit', hour12:true, day:'numeric', month:'short' });
+      } catch (e) { ts = msg.timestamp; }
+      b.innerHTML = `${escapeHtml(msg.content)}<div class="meta">${ts}</div>`;
+      messagesDiv.appendChild(b);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function loadHistory() {
+      const res = await fetch(`http://127.0.0.1:8000/chats/${chatId}/messages`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (!res.ok) { alert("Failed to load history"); return; }
+      const msgs = await res.json();
+      msgs.forEach(m => showMessage(m));
+    }
+
+    // get short-lived ws token, then connect
+    async function connectWS() {
+      const tRes = await fetch("http://127.0.0.1:8000/ws-token", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (!tRes.ok) { alert("Cannot get ws token"); return null; }
+      const { ws_token } = await tRes.json();
+      const ws = new WebSocket(`ws://127.0.0.1:8000/chats/ws/${chatId}?ws_token=${ws_token}`);
+
+      ws.onopen = () => console.log("ws open");
+      ws.onmessage = (ev) => {
+        const msg = JSON.parse(ev.data);
+        showMessage(msg);
+      };
+      ws.onclose = () => console.log("ws closed");
+      return ws;
+    }
+
+    let wsClient = null;
+    (async () => {
+      await loadHistory();
+      wsClient = await connectWS();
+    })();
+
+    sendBtn.addEventListener("click", sendMessage);
+    txt.addEventListener("keydown", (e) => { if (e.key === "Enter") sendMessage(); });
+
+    function sendMessage() {
+      const v = txt.value.trim();
+      if (!v || !wsClient || wsClient.readyState !== WebSocket.OPEN) return;
+      wsClient.send(JSON.stringify({ content: v }));
+      txt.value = "";
+    }
+  </script>
+</body>
+</html>

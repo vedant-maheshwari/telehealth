@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pending Invitations</title>
+</head>
+<body>
+  <h2>Your Pending Invitations</h2>
+  <div id="invites"></div>
+
+  <script>
+    async function loadInvitations() {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        alert("You must login first!");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/family/family_invitation_for_current_user", {
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+        const invites = await response.json();
+
+        const container = document.getElementById("invites");
+        container.innerHTML = "";
+
+        invites.forEach(invite => {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <p><b>${invite.inviter_name}</b> invited you as <i>${invite.relationship_type}</i></p>
+            <button onclick="respondInvitation('${invite.token}', 'accept')">Accept</button>
+            <button onclick="respondInvitation('${invite.token}', 'reject')">Reject</button>
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load invitations");
+      }
+    }
+
+    async function respondInvitation(inviteToken, action) {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch("http://127.0.0.1:8000/family/respond_invitation", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ token: inviteToken, action: action })
+        });
+
+        const data = await response.json();
+        alert(data.message);
+        loadInvitations(); // reload after action
+      } catch (err) {
+        console.error(err);
+        alert("Failed to respond");
+      }
+    }
+
+    // load pending invitations when page opens
+    loadInvitations();
+  </script>
+</body>
+</html>

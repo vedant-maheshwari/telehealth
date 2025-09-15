@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctor Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f8fc; margin: 0; }
+    header { background: #1976d2; color: #fff; padding: 15px; text-align: center; }
+    .container { padding: 20px; max-width: 800px; margin: auto; }
+    .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    button { padding: 10px 15px; border: none; background: #1976d2; color: white; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+    button:hover { background: #125aa1; }
+
+    /* Modal styles */
+    .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: #fff; margin: 8% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; }
+    .close { float: right; font-size: 20px; cursor: pointer; }
+
+    input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
+    .modal-actions { display: flex; justify-content: space-between; margin-top: 15px; }
+    .cancel-btn { background: #aaa; }
+    .cancel-btn:hover { background: #888; }
+
+    .chat-card, .vital-card { background: #fff; border-radius: 10px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Doctor Dashboard</h2>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h3>Welcome, <span id="userName"></span></h3>
+      <p>Email: <span id="userEmail"></span></p>
+    </div>
+
+    <div class="card" id="createSection" style="display:none;">
+      <h3>Chat</h3>
+      <button id="createBtn">Create Chat Room</button>
+      <button onclick="viewMyChats()">View My Chats</button>
+    </div>
+
+    <div class="card">
+      <h3>Appointment</h3>
+      <button onclick="location.href='doctor_appointment.html'">View Appointments</button>
+    </div>
+
+    <div class="card">
+      <h3>Add Patient Vitals</h3>
+      <button onclick="openVitalsModal()">Add Vitals</button>
+    </div>
+
+    <div class="card">
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Create Chat Room Modal -->
+  <div id="createChatModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeCreateModal()">&times;</span>
+      <h2>Create Chat Room</h2>
+
+      <label>Room Name:</label>
+      <input type="text" id="roomName" placeholder="Enter chat room name">
+
+      <label>Participant IDs (comma separated):</label>
+      <input type="text" id="participants" placeholder="e.g. 2,5,7">
+
+      <div class="modal-actions">
+        <button id="submitRoomBtn">Create</button>
+        <button class="cancel-btn" onclick="closeCreateModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Rooms Modal -->
+  <div id="chatModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Your Chat Rooms</h2>
+      <div id="chatRooms"></div>
+    </div>
+  </div>
+
+  <!-- Vitals Modal -->
+  <div id="vitalsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeVitalsModal()">&times;</span>
+      <h2>Add Patient Vitals</h2>
+
+      <label>Patient Email:</label>
+      <input type="email" id="vitalEmail" placeholder="patient@example.com">
+
+      <label>Blood Pressure (BP):</label>
+      <input type="number" id="vitalBP" placeholder="Enter BP value">
+
+      <div class="modal-actions">
+        <button id="submitVitalsBtn">Submit</button>
+        <button class="cancel-btn" onclick="closeVitalsModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadUser() {
+      const token = sessionStorage.getItem("token");
+      if (!token) { window.location.href = "login.html"; return; }
+      try {
+        const res = await fetch("http://127.0.0.1:8000/user/me", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Unauthorized");
+        const user = await res.json();
+        sessionStorage.setItem("user_id", user.id);
+        const role = user.role;
+        document.getElementById("userName").textContent = user.name;
+        document.getElementById("userEmail").textContent = user.email;
+
+        // Show create chat section for doctors
+        if (role === "doctor") {
+          document.getElementById("createSection").style.display = "block";
+          document.getElementById("createBtn").addEventListener("click", openCreateModal);
+          document.getElementById("submitRoomBtn").addEventListener("click", createChatRoom);
+        }
+      } catch (err) {
+        sessionStorage.clear();
+        alert("Please login again");
+        window.location.href = "login.html";
+      }
+    }
+
+    // === MODALS ===
+    function openCreateModal() { document.getElementById("createChatModal").style.display = "block"; }
+    function closeCreateModal() { document.getElementById("createChatModal").style.display = "none"; }
+    function closeModal() { document.getElementById("chatModal").style.display = "none"; }
+    function openVitalsModal() { document.getElementById("vitalsModal").style.display = "block"; }
+    function closeVitalsModal() { document.getElementById("vitalsModal").style.display = "none"; }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    // === CREATE CHAT ROOM ===
+    async function createChatRoom() {
+      const token = sessionStorage.getItem("token");
+      const name = document.getElementById("roomName").value.trim();
+      const participantsRaw = document.getElementById("participants").value.trim();
+      if (!name || !participantsRaw) { alert("Fill name and participants"); return; }
+
+      const participant_ids = participantsRaw
+        .split(",")
+        .map(s => Number(s.trim()))
+        .filter(n => !isNaN(n));
+
+      const res = await fetch("http://127.0.0.1:8000/chats/create", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify({ name, participant_ids })
+      });
+
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({ detail: res.status }));
+        alert("Failed: " + (e.detail || res.status));
+        return;
+      }
+
+      const data = await res.json();
+      location.href = `chat.html?chatId=${data.id}`;
+    }
+
+    // === VIEW CHATS ===
+    async function viewMyChats() {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch("http://127.0.0.1:8000/chats/my", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const chats = await res.json();
+
+      const chatRoomsDiv = document.getElementById("chatRooms");
+      chatRoomsDiv.innerHTML = "";
+
+      chats.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "chat-card";
+        card.innerHTML = `
+          <h3>${c.name || "Chat Room"}</h3>
+          <p>Room ID: ${c.id}</p>
+          <button onclick="openChat(${c.id})">Open</button>
+        `;
+        chatRoomsDiv.appendChild(card);
+      });
+
+      document.getElementById("chatModal").style.display = "block";
+    }
+
+    function openChat(chatId) {
+      if (!chatId) { alert("Chat ID required"); return; }
+      location.href = `chat.html?chatId=${chatId}`;
+    }
+
+    // === ADD VITALS ===
+    document.getElementById("submitVitalsBtn").addEventListener("click", async () => {
+      const email = document.getElementById("vitalEmail").value.trim();
+      const bp = parseInt(document.getElementById("vitalBP").value.trim());
+      if (!email || isNaN(bp)) { alert("Fill all fields correctly"); return; }
+
+      const token = sessionStorage.getItem("token");
+      try {
+        const res = await fetch("http://127.0.0.1:8000/add_vital", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ patient_email: email, bp })
+        });
+
+        if (!res.ok) {
+          const e = await res.json().catch(() => ({ detail: res.status }));
+          alert("Failed: " + (e.detail || res.status));
+          return;
+        }
+
+        await res.json();
+        alert("Vitals added successfully!");
+        closeVitalsModal();
+      } catch (err) {
+        alert("Error adding vitals");
+        console.error(err);
+      }
+    });
+
+    loadUser();
+  </script>
+</body>
+</html>

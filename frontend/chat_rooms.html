@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Chat Rooms</title>
+  <style>
+    body { font-family: Arial; background:#f4f7fb; padding:20px }
+    .card { background:#fff; padding:12px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.05); margin-bottom:10px; }
+    .btn { padding:8px 12px; background:#1976d2; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    label { display:block; margin-top:8px }
+    input { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ddd }
+  </style>
+</head>
+<body>
+  <h2>Your Chat Rooms</h2>
+  <div id="roomsContainer"></div>
+
+  <div id="createSection" class="card" style="display:none;">
+    <h3>Create Chat Room (Doctors only)</h3>
+    <label>Room name</label>
+    <input id="roomName" placeholder="e.g., John's Consultation">
+    <label>Participant IDs (comma-separated)</label>
+    <input id="participants" placeholder="e.g., 5,6 (patient id, family ids)">
+    <button id="createBtn" class="btn">Create Room</button>
+  </div>
+
+  <script>
+    const token = sessionStorage.getItem("token");
+    const role = sessionStorage.getItem("role");
+    if (!token) { window.location.href = "login.html"; }
+
+    async function loadRooms() {
+      const res = await fetch("http://127.0.0.1:8000/chats/my", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const container = document.getElementById("roomsContainer");
+      container.innerHTML = "";
+      if (!res.ok) {
+        container.innerText = "Failed to load chat rooms";
+        return;
+      }
+      const rooms = await res.json();
+      if (rooms.length === 0) container.innerHTML = "<div class='card'>No chat rooms yet</div>";
+      rooms.forEach(r => {
+        const d = document.createElement("div");
+        d.className = "card";
+        d.innerHTML = `<strong>${r.name}</strong><div>Room ID: ${r.id}</div>
+                       <button class="btn" onclick="openRoom(${r.id})">Open</button>`;
+        container.appendChild(d);
+      });
+    }
+
+    function openRoom(id) {
+      location.href = `chat.html?chatId=${id}`;
+    }
+
+    // show create UI for doctor
+    if (role === "doctor") {
+      document.getElementById("createSection").style.display = "block";
+      document.getElementById("createBtn").addEventListener("click", async () => {
+        const name = document.getElementById("roomName").value.trim();
+        const participantsRaw = document.getElementById("participants").value.trim();
+        if (!name || !participantsRaw) { alert("Fill name and participants"); return; }
+        const participant_ids = participantsRaw.split(",").map(s => Number(s.trim())).filter(n=>!isNaN(n));
+        const res = await fetch("http://127.0.0.1:8000/chats/create", {
+          method: "POST",
+          headers: { "Authorization":"Bearer "+token, "Content-Type":"application/json" },
+          body: JSON.stringify({ name, participant_ids })
+        });
+        if (!res.ok) {
+          const e = await res.json().catch(()=>({detail:res.status}));
+          alert("Failed: "+(e.detail||res.status));
+          return;
+        }
+        const data = await res.json();
+        location.href = `chat.html?chatId=${data.id}`;
+      });
+    }
+
+    loadRooms();
+  </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f8fc;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1976d2;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      background: #1976d2;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #125aa1;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .chat-card, .vital-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .vital-card p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Patient Dashboard</h2>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h3>Welcome, <span id="userName"></span></h3>
+      <p>Email: <span id="userEmail"></span></p>
+    </div>
+
+    <div class="card">
+      <h3>Manage</h3>
+      <button onclick="window.location.href='family_management.html'">Family Management</button>
+      <button onclick="window.location.href='create_appointment.html'">Create Appointment</button>
+    </div>
+
+    <div class="card">
+      <h3>Chat</h3>
+      <button onclick="viewMyChats()">View My Chats</button>
+    </div>
+
+    <div class="card">
+      <h3>Vitals</h3>
+      <button onclick="viewVitals()">View My Vitals</button>
+    </div>
+
+    <div class="card">
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Modal for chat rooms -->
+  <div id="chatModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeChatModal()">&times;</span>
+      <h2>Your Chat Rooms</h2>
+      <div id="chatRooms"></div>
+    </div>
+  </div>
+
+  <!-- Modal for vitals -->
+  <div id="vitalsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeVitalsModal()">&times;</span>
+      <h2>My Vitals</h2>
+      <div id="vitalsContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    async function loadUser() {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        window.location.href = "login.html";
+        return;
+      }
+      try {
+        const res = await fetch("http://127.0.0.1:8000/user/me", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Unauthorized");
+        const user = await res.json();
+        sessionStorage.setItem("user_id", user.id);
+        document.getElementById("userName").textContent = user.name;
+        document.getElementById("userEmail").textContent = user.email;
+      } catch (err) {
+        sessionStorage.clear();
+        alert("Please login again");
+        window.location.href = "login.html";
+      }
+    }
+
+    // === CHAT ROOMS ===
+    async function viewMyChats() {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch("http://127.0.0.1:8000/chats/my", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const chats = await res.json();
+
+      const chatRoomsDiv = document.getElementById("chatRooms");
+      chatRoomsDiv.innerHTML = "";
+
+      chats.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "chat-card";
+        card.innerHTML = `
+          <h3>${c.name || "Chat Room"}</h3>
+          <p>Room ID: ${c.id}</p>
+          <button onclick="openChat(${c.id})">Open</button>
+        `;
+        chatRoomsDiv.appendChild(card);
+      });
+
+      document.getElementById("chatModal").style.display = "block";
+    }
+
+    function closeChatModal() { document.getElementById("chatModal").style.display = "none"; }
+    function openChat(chatId) {
+      if (!chatId) { alert("Chat ID required"); return; }
+      window.location.href = `chat.html?chatId=${chatId}`;
+    }
+
+    // === VITALS ===
+    async function viewVitals() {
+      const token = sessionStorage.getItem("token");
+      try {
+        const res = await fetch("http://127.0.0.1:8000/get_vital", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) throw new Error("Failed to fetch vitals");
+        const vitals = await res.json();
+
+        const container = document.getElementById("vitalsContainer");
+        container.innerHTML = "";
+        if (!vitals || vitals.length === 0) {
+          container.innerHTML = "<p>No vitals found.</p>";
+        } else {
+          vitals.forEach(v => {
+            const card = document.createElement("div");
+            card.className = "vital-card";
+            card.innerHTML = `
+              <p><strong>Date:</strong> ${v.date || "N/A"}</p>
+              <p><strong>BP:</strong> ${v.bp}</p>
+            `;
+            container.appendChild(card);
+          });
+        }
+
+        document.getElementById("vitalsModal").style.display = "block";
+      } catch (err) {
+        alert("Error fetching vitals");
+        console.error(err);
+      }
+    }
+
+    function closeVitalsModal() { document.getElementById("vitalsModal").style.display = "none"; }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    loadUser();
+  </script>
+</body>
+</html>
