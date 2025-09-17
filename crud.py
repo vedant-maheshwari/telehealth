@@ -1,6 +1,7 @@
 from sqlalchemy.orm import session
+from sqlalchemy import func
 import models, schemas
-from datetime import datetime
+from datetime import datetime, time, timedelta
 
 def insert_patient(db : session, user : schemas.InsertPatient):
     patient = models.User(
@@ -107,3 +108,65 @@ def add_vital(vital : schemas.Vitals_update, doctor_id : int, db : session):
 
 def get_vitals(patient : models.User):
     return patient.vitals
+
+
+def set_doctor_availability(
+    request: schemas.DoctorAvailability, 
+    doctor_id : int,
+    db: session
+):
+    doctor_availability = models.DoctorAvailability(
+        doctor_id= doctor_id,
+        day_of_week=request.day_of_week,
+        start_time=request.start_time,
+        end_time=request.end_time,
+        appointment_duration=request.appointment_duration,
+        break_start=request.break_start,
+        break_end=request.break_end
+    )
+
+    db.add(doctor_availability)
+    db.commit()
+    db.refresh(doctor_availability)
+    return doctor_availability
+
+
+def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
+    accepted_appointments = db.query(models.Appointments).filter(models.Appointments.doctor_id == doctor_id,
+                                          func.date(models.Appointments.date_time) == date,
+                                          models.Appointments.status.in_(['ACCECPTED'])).all()
+    
+    un_available_slots = [slot.date_time.time() for slot in accepted_appointments]
+
+    day_to_num = {'Sunday' : 0, 'Monday' : 1, 'Tuesday' : 2, 'Wednesday' : 3, 'Thursday' : 4, 'Friday' : 5, 'Saturday' : 6}
+
+    day_num = day_to_num[date.strftime('%A')]
+
+    doctor_availability = db.query(models.DoctorAvailability).filter(models.DoctorAvailability.doctor_id == doctor_id,
+                                                                     models.DoctorAvailability.day_of_week == day_num).first()
+
+    doctor_start_time = doctor_availability.start_time
+
+    doctor_end_time = doctor_availability.end_time
+
+    doctor_break_start = doctor_availability.break_start
+
+    doctor_break_end = doctor_availability.break_end
+
+    doctor_appointment_duration = doctor_availability.appointment_duration
+
+    available_slots = []
+
+    current_time = datetime.combine(date,doctor_start_time)
+
+    doctor_end_time = datetime.combine(date,doctor_end_time)
+
+    while current_time < doctor_end_time:
+        slot_time = current_time.time()
+        if slot_time not in un_available_slots and (slot_time < doctor_break_start or slot_time >= doctor_break_end):
+                    available_slots.append(slot_time)
+        current_time = current_time + timedelta(minutes=doctor_appointment_duration)
+
+    return available_slots
+
+

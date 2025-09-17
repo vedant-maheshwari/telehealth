@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room - Telehealth Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="navbar-brand">Telehealth Platform</a>
+            <div class="navbar-menu">
+                <span id="roomName" class="navbar-item">Loading...</span>
+                <button class="btn btn-outline btn-sm" onclick="goBackToDashboard()">Back to Dashboard</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-semibold" id="chatRoomTitle">Chat Room</h3>
+                            <div class="flex items-center gap-2">
+                                <span id="connectionStatus" class="status-badge status-pending">Connecting...</span>
+                                <button class="btn btn-secondary btn-sm" onclick="refreshChat()">Refresh</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Chat Container -->
+                        <div class="chat-container">
+                            <!-- Messages Area -->
+                            <div id="chat-messages" class="chat-messages">
+                                <div class="text-center py-8">
+                                    <div class="spinner mx-auto mb-2"></div>
+                                    <p class="text-secondary">Loading messages...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Input Area -->
+                            <div class="chat-input-container">
+                                <input 
+                                    type="text" 
+                                    id="messageInput" 
+                                    class="chat-input" 
+                                    placeholder="Type your message..." 
+                                    disabled
+                                    maxlength="1000"
+                                >
+                                <button 
+                                    id="sendButton" 
+                                    class="btn btn-primary" 
+                                    onclick="sendMessage()" 
+                                    disabled
+                                >
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Info -->
+            <div class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="font-semibold">Chat Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="chatInfo" class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="font-medium">Chat ID:</span>
+                                <span id="chatId">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Connection:</span>
+                                <span id="connectionInfo">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Messages:</span>
+                                <span id="messageCount">0</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">Participants:</span>
+                                <div id="participantsList" class="mt-2 text-sm text-secondary">
+                                    Loading...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="font-semibold">Chat Guidelines</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid grid-2 gap-4 text-sm">
+                            <div>
+                                <h4 class="font-medium mb-2">For Patients & Family:</h4>
+                                <ul class="space-y-1 text-secondary">
+                                    <li>• Be clear and specific about symptoms</li>
+                                    <li>• Ask questions if you don't understand</li>
+                                    <li>• Share relevant medical history</li>
+                                    <li>• Keep conversations professional</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">For Doctors:</h4>
+                                <ul class="space-y-1 text-secondary">
+                                    <li>• Provide clear medical guidance</li>
+                                    <li>• Ask follow-up questions when needed</li>
+                                    <li>• Maintain patient confidentiality</li>
+                                    <li>• Document important information</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Connection Error</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4">
+                    <div class="text-6xl mb-4 text-error">⚠️</div>
+                    <p class="text-error mb-4" id="errorMessage">
+                        Failed to connect to chat room. Please check your connection and try again.
+                    </p>
+                    <div class="flex gap-3 justify-center">
+                        <button class="btn btn-primary" onclick="refreshChat()">Try Again</button>
+                        <button class="btn btn-secondary" onclick="goBackToDashboard()">Go Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let currentChatId = null;
+        let currentUser = null;
+        let messageCount = 0;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
+        // Initialize chat
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Get chat ID from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                currentChatId = urlParams.get('chatId');
+                
+                if (!currentChatId) {
+                    showError('No chat room ID provided');
+                    return;
+                }
+                
+                // Load user info
+                currentUser = await APIService.getCurrentUser();
+                
+                // Update UI with chat ID
+                document.getElementById('chatId').textContent = currentChatId;
+                document.getElementById('chatRoomTitle').textContent = `Chat Room #${currentChatId}`;
+                document.getElementById('roomName').textContent = `Room #${currentChatId}`;
+                
+                // Initialize chat
+                await initializeChat();
+                
+            } catch (error) {
+                console.error('Failed to initialize chat:', error);
+                showError('Failed to initialize chat: ' + error.message);
+            }
+        });
+
+        // Initialize chat functionality
+        async function initializeChat() {
+            try {
+                updateConnectionStatus('connecting', 'Connecting to chat...');
+                
+                // Initialize chat manager
+                await chatManager.initializeChat(currentChatId);
+                
+                updateConnectionStatus('connected', 'Connected');
+                enableChatInput();
+                
+                // Set up message input handler
+                document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+                
+                updateChatInfo();
+                
+            } catch (error) {
+                console.error('Failed to initialize chat:', error);
+                updateConnectionStatus('error', 'Connection failed');
+                showError('Failed to connect to chat room: ' + error.message);
+            }
+        }
+
+        // Update connection status
+        function updateConnectionStatus(status, message) {
+            const statusElement = document.getElementById('connectionStatus');
+            const connectionInfo = document.getElementById('connectionInfo');
+            
+            statusElement.className = `status-badge status-${status === 'connected' ? 'accepted' : status === 'error' ? 'rejected' : 'pending'}`;
+            statusElement.textContent = message;
+            connectionInfo.textContent = message;
+        }
+
+        // Enable chat input
+        function enableChatInput() {
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendButton').disabled = false;
+            document.getElementById('messageInput').focus();
+        }
+
+        // Disable chat input
+        function disableChatInput() {
+            document.getElementById('messageInput').disabled = true;
+            document.getElementById('sendButton').disabled = true;
+        }
+
+        // Send message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value.trim();
+            
+            if (!content) {
+                return;
+            }
+            
+            if (!chatManager.websocket || chatManager.websocket.readyState !== WebSocket.OPEN) {
+                Utils.showNotification('Chat connection is not available', 'error');
+                return;
+            }
+            
+            try {
+                chatManager.sendMessage(content);
+                messageInput.value = '';
+                messageCount++;
+                updateMessageCount();
+                
+            } catch (error) {
+                console.error('Failed to send message:', error);
+                Utils.showNotification('Failed to send message', 'error');
+            }
+        }
+
+        // Update message count
+        function updateMessageCount() {
+            document.getElementById('messageCount').textContent = messageCount;
+        }
+
+        // Update chat info
+        function updateChatInfo() {
+            // Update participant info (simplified)
+            const participantsList = document.getElementById('participantsList');
+            participantsList.innerHTML = `
+                <div class="text-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-2 h-2 bg-success rounded-full"></div>
+                        <span>${currentUser.name} (You)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-secondary rounded-full"></div>
+                        <span>Other participants</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Refresh chat
+        async function refreshChat() {
+            try {
+                updateConnectionStatus('connecting', 'Reconnecting...');
+                
+                // Disconnect current connection
+                if (chatManager.websocket) {
+                    chatManager.disconnect();
+                }
+                
+                // Wait a moment before reconnecting
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Reinitialize
+                await initializeChat();
+                
+                Utils.showNotification('Chat refreshed successfully', 'success');
+                
+            } catch (error) {
+                console.error('Failed to refresh chat:', error);
+                updateConnectionStatus('error', 'Refresh failed');
+                Utils.showNotification('Failed to refresh chat', 'error');
+            }
+        }
+
+        // Show error modal
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            Modal.show('errorModal');
+        }
+
+        // Go back to dashboard
+        function goBackToDashboard() {
+            const userRole = Utils.getUserRole();
+            
+            // Disconnect chat before leaving
+            if (chatManager) {
+                chatManager.disconnect();
+            }
+            
+            // Redirect based on role
+            Utils.redirectUser(userRole);
+        }
+
+        // Handle connection events
+        window.addEventListener('beforeunload', () => {
+            if (chatManager) {
+                chatManager.disconnect();
+            }
+        });
+
+        // Enhanced chat manager methods
+        const originalAddMessageToDisplay = chatManager.addMessageToDisplay;
+        chatManager.addMessageToDisplay = function(message, shouldScroll = true) {
+            originalAddMessageToDisplay.call(this, message, shouldScroll);
+            messageCount++;
+            updateMessageCount();
+        };
+
+        const originalDisplayMessages = chatManager.displayMessages;
+        chatManager.displayMessages = function(messages) {
+            originalDisplayMessages.call(this, messages);
+            messageCount = messages.length;
+            updateMessageCount();
+        };
+
+        // Handle WebSocket connection events
+        const originalConnectWebSocket = chatManager.connectWebSocket;
+        chatManager.connectWebSocket = async function() {
+            const wsUrl = `ws://localhost:8000/chats/ws/${this.currentChatId}?ws_token=${this.wsToken}`;
+            
+            this.websocket = new WebSocket(wsUrl);
+            
+            this.websocket.onopen = () => {
+                console.log('WebSocket connected');
+                updateConnectionStatus('connected', 'Connected');
+                enableChatInput();
+                reconnectAttempts = 0;
+            };
+            
+            this.websocket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                this.addMessageToDisplay(message);
+            };
+            
+            this.websocket.onclose = (event) => {
+                console.log('WebSocket disconnected', event.code, event.reason);
+                updateConnectionStatus('error', 'Disconnected');
+                disableChatInput();
+                
+                // Attempt to reconnect
+                if (reconnectAttempts < maxReconnectAttempts && this.currentChatId) {
+                    reconnectAttempts++;
+                    setTimeout(() => {
+                        if (this.currentChatId) {
+                            console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                            updateConnectionStatus('connecting', `Reconnecting (${reconnectAttempts})...`);
+                            this.connectWebSocket();
+                        }
+                    }, 3000 * reconnectAttempts);
+                } else {
+                    showError('Connection lost. Please refresh the page or go back to dashboard.');
+                }
+            };
+            
+            this.websocket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus('error', 'Connection error');
+                disableChatInput();
+            };
+        };
+
+        // Auto-scroll to bottom when new messages arrive
+        const messagesContainer = document.getElementById('chat-messages');
+        const observer = new MutationObserver(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+
+        observer.observe(messagesContainer, { childList: true });
+    </script>
+
+    <style>
+        .space-y-1 > * + * {
+            margin-top: 0.25rem;
+        }
+        
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
+        }
+        
+        .w-2 {
+            width: 0.5rem;
+        }
+        
+        .h-2 {
+            height: 0.5rem;
+        }
+        
+        .bg-success {
+            background-color: var(--success-color);
+        }
+        
+        .chat-container {
+            height: 600px;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            border-color: var(--primary-color);
+        }
+        
+        .chat-input:disabled {
+            background-color: #f1f5f9;
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+    </style>
+</body>
+</html>

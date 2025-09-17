@@ -3,7 +3,7 @@ from database import Base
 from sqlalchemy import String, ForeignKey, DateTime, Enum, JSON, UniqueConstraint, Text
 from typing import List
 import enum
-from datetime import datetime
+from datetime import datetime, time
 
 
 class UserRoles(str, enum.Enum):
@@ -54,6 +54,8 @@ class User(Base):
     vitals : Mapped[List['Vitals']] = relationship(back_populates='patient', foreign_keys='Vitals.patient_id')
 
     doctor_for_patient : Mapped[List['Vitals']] = relationship(back_populates='doctor', foreign_keys='Vitals.doctor_id')
+
+    availability_settings: Mapped[List["DoctorAvailability"]] = relationship(back_populates="doctor")
 
 
 class FamilyConnections(Base):
@@ -152,3 +154,19 @@ class ChatMessage(Base):
     chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="messages")
     # sender relationship optional:
     # sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id])
+
+
+class DoctorAvailability(Base):
+    __tablename__ = 'doctor_availability'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    doctor_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    day_of_week: Mapped[int] = mapped_column()  # 0-6 (Mon-Sun)
+    start_time: Mapped[time] = mapped_column()
+    end_time: Mapped[time] = mapped_column()
+    appointment_duration: Mapped[int] = mapped_column()  # minutes
+    break_start: Mapped[time] = mapped_column(nullable=True)
+    break_end: Mapped[time] = mapped_column(nullable=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    
+    doctor: Mapped["User"] = relationship(back_populates="availability_settings")

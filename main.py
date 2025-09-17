@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 import colorlog
 import traceback
+from datetime import datetime, date, time
 
 
 log_colors = {
@@ -179,3 +180,59 @@ def add_vital(vital : schemas.Vitals_update, db : session = Depends(get_db), doc
 def get_vital(patient = Depends(auth.check_patient)):
     return crud.get_vitals(patient)
 
+
+@app.post('/doctor/set_availability')
+def set_doctor_availability(
+    request: schemas.DoctorAvailability, 
+    doctor = Depends(auth.check_doctor),
+    db: session = Depends(get_db)
+):
+    return crud.set_doctor_availability(request, doctor.id, db)
+
+@app.get('/doctor/availability')
+def get_doctor_availability(
+    doctor = Depends(auth.check_doctor),  # Ensure only doctors can access
+    db: session = Depends(get_db)
+):
+    """
+    Get the doctor's availability settings (working hours, appointment duration, etc.)
+    """
+    # Query the doctor's availability from database
+    availability_records = db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.doctor_id == doctor.id,
+        models.DoctorAvailability.is_active == True
+    ).all()
+    
+    if not availability_records:
+        # Return empty response if no availability set
+        return {
+            "availabilities": [],
+            "message": "No availability settings found. Please set your working hours."
+        }
+    
+    # Format the response
+    availabilities = []
+    for record in availability_records:
+        availabilities.append({
+            "day_of_week": record.day_of_week,
+            "start_time": record.start_time.strftime("%H:%M"),
+            "end_time": record.end_time.strftime("%H:%M"),
+            "appointment_duration": record.appointment_duration,
+            "break_start": record.break_start.strftime("%H:%M") if record.break_start else None,
+            "break_end": record.break_end.strftime("%H:%M") if record.break_end else None
+        })
+    
+    return {
+        "availabilities": availabilities,
+        "doctor_id": doctor.id,
+        "doctor_name": doctor.name
+    }
+
+@app.get('/avail_appoint')
+def get_aval(
+    app_date : date,
+    doctor_id : int,
+    db: session = Depends(get_db),
+):
+    return crud.get_doctor_free_slots(doctor_id, app_date, db)
+    
