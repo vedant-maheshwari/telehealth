@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Optional, List
 from enum import Enum
 
@@ -113,3 +113,14 @@ class ChatMessageOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class DoctorAvailability(BaseModel):
+    day_of_week: int  # 0=Monday, 6=Sunday
+    start_time: time
+    end_time: time
+    appointment_duration: int  # minutes
+    break_start: Optional[time] = None
+    break_end: Optional[time] = None
+
+class SetAvailabilityRequest(BaseModel):
+    availabilities: List[DoctorAvailability]

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - Telehealth Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="#" class="navbar-brand">Telehealth Platform</a>
+            <div class="navbar-menu">
+                <span id="userName" class="navbar-item">Loading...</span>
+                <button class="btn btn-outline btn-sm logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Welcome Section -->
+            <div class="section">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="section-title">Welcome back!</h1>
+                        <div id="userInfo" class="text-secondary">
+                            <p>Loading user information...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section">
+                <h2 class="section-title">Quick Actions</h2>
+                <div class="grid grid-3">
+                    <div class="card cursor-pointer hover:shadow-md transition" onclick="Modal.show('appointmentModal')">
+                        <div class="card-body text-center">
+                            <div class="text-3xl mb-3">📅</div>
+                            <h3 class="font-semibold mb-2">Book Appointment</h3>
+                            <p class="text-secondary text-sm">Schedule a consultation with a doctor</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card cursor-pointer hover:shadow-md transition" onclick="loadMyChats()">
+                        <div class="card-body text-center">
+                            <div class="text-3xl mb-3">💬</div>
+                            <h3 class="font-semibold mb-2">My Chats</h3>
+                            <p class="text-secondary text-sm">View conversations with doctors</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card cursor-pointer hover:shadow-md transition" onclick="Modal.show('vitalsModal')">
+                        <div class="card-body text-center">
+                            <div class="text-3xl mb-3">❤️</div>
+                            <h3 class="font-semibold mb-2">View Vitals</h3>
+                            <p class="text-secondary text-sm">Check your health records</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family Management -->
+            <div class="section">
+                <h2 class="section-title">Family Management</h2>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="font-semibold">Family Members</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="familyMembersList">
+                                <div class="text-center text-secondary py-4">
+                                    <div class="spinner mx-auto mb-2"></div>
+                                    Loading family members...
+                                </div>
+                            </div>
+                            <button class="btn btn-outline w-full mt-4" onclick="Modal.show('inviteFamilyModal')">
+                                Invite Family Member
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="font-semibold">Pending Invitations</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="pendingInvitationsList">
+                                <div class="text-center text-secondary py-4">
+                                    <div class="spinner mx-auto mb-2"></div>
+                                    Loading invitations...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section">
+                <h2 class="section-title">Recent Activity</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div id="recentActivity" class="space-y-4">
+                            <div class="text-center text-secondary py-8">
+                                <div class="text-6xl mb-4">📋</div>
+                                <p>No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Book Appointment Modal -->
+    <div id="appointmentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Book Appointment</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label for="doctorSelect" class="form-label">Select Doctor</label>
+                        <select id="doctorSelect" name="doctor_id" class="form-select" required>
+                            <option value="">Loading doctors...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="appointmentDate" class="form-label">Appointment Date & Time</label>
+                        <input 
+                            type="datetime-local" 
+                            id="appointmentDate" 
+                            name="appointment_date" 
+                            class="form-input" 
+                            required
+                        >
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="Modal.hide('appointmentModal')">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Book Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vitals Modal -->
+    <div id="vitalsModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">My Vitals</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="vitalsContent">
+                    <div class="text-center py-4">
+                        <div class="spinner mx-auto mb-2"></div>
+                        Loading vitals...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Rooms Modal -->
+    <div id="chatRoomsModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">My Chat Rooms</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="chatRoomsList">
+                    <div class="text-center py-4">
+                        <div class="spinner mx-auto mb-2"></div>
+                        Loading chat rooms...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Family Modal -->
+    <div id="inviteFamilyModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Invite Family Member</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="inviteFamilyForm">
+                    <div class="form-group">
+                        <label for="inviteeEmail" class="form-label">Family Member's Email</label>
+                        <input 
+                            type="email" 
+                            id="inviteeEmail" 
+                            name="invitee_email" 
+                            class="form-input" 
+                            placeholder="Enter email address"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="relationshipType" class="form-label">Relationship</label>
+                        <select id="relationshipType" name="relationship_type" class="form-select" required>
+                            <option value="">Select relationship</option>
+                            <option value="spouse">Spouse</option>
+                            <option value="parent">Parent</option>
+                            <option value="sibling">Sibling</option>
+                        </select>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="Modal.hide('inviteFamilyModal')">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Send Invitation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUserInfo();
+            await loadDoctors();
+            await loadFamilyMembers();
+            await loadPendingInvitations();
+        });
+
+        // Load user information
+        async function loadUserInfo() {
+            try {
+                currentUser = await APIService.getCurrentUser();
+                
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userInfo').innerHTML = `
+                    <p><strong>Email:</strong> ${currentUser.email}</p>
+                    <p><strong>Role:</strong> Patient</p>
+                    <p><strong>Member since:</strong> ${Utils.formatDate(currentUser.date_of_birth)}</p>
+                `;
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+                Utils.showNotification('Failed to load user information', 'error');
+            }
+        }
+
+        // Load doctors for appointment booking
+        async function loadDoctors() {
+            try {
+                const doctors = await APIService.getAllDoctors();
+                const doctorSelect = document.getElementById('doctorSelect');
+                
+                doctorSelect.innerHTML = '<option value="">Select a doctor</option>';
+                doctors.forEach(doctor => {
+                    doctorSelect.innerHTML += `
+                        <option value="${doctor.id}">
+                            Dr. ${doctor.name} (License: ${doctor.medical_license || 'N/A'})
+                        </option>
+                    `;
+                });
+            } catch (error) {
+                console.error('Failed to load doctors:', error);
+                document.getElementById('doctorSelect').innerHTML = '<option value="">Failed to load doctors</option>';
+            }
+        }
+
+        // Load family members
+        async function loadFamilyMembers() {
+            try {
+                const familyMembers = await APIService.getAllFamilyMembers();
+                const container = document.getElementById('familyMembersList');
+                
+                if (familyMembers.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-secondary py-4">
+                            <div class="text-4xl mb-2">👨‍👩‍👧‍👦</div>
+                            <p>No family members connected</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = familyMembers.map(member => `
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <div>
+                                <div class="font-medium">${member.name}</div>
+                                <div class="text-sm text-secondary capitalize">${member.relationship_type}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load family members:', error);
+                document.getElementById('familyMembersList').innerHTML = `
+                    <div class="text-center text-error py-4">
+                        <p>Failed to load family members</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load pending invitations
+        async function loadPendingInvitations() {
+            try {
+                const invitations = await APIService.getFamilyInvitations();
+                const container = document.getElementById('pendingInvitationsList');
+                
+                if (invitations.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-secondary py-4">
+                            <div class="text-4xl mb-2">📪</div>
+                            <p>No pending invitations</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = invitations.map(invitation => `
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="font-medium">${invitation.inviter_name}</div>
+                                    <div class="text-sm text-secondary capitalize">Wants to connect as ${invitation.relationship_type}</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn btn-success btn-sm" onclick="respondToInvitation('${invitation.token}', 'accept')">
+                                    Accept
+                                </button>
+                                <button class="btn btn-error btn-sm" onclick="respondToInvitation('${invitation.token}', 'reject')">
+                                    Reject
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load pending invitations:', error);
+                document.getElementById('pendingInvitationsList').innerHTML = `
+                    <div class="text-center text-error py-4">
+                        <p>Failed to load invitations</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Book appointment
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const doctorId = parseInt(formData.get('doctor_id'));
+            const appointmentDate = formData.get('appointment_date');
+            
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const stopLoading = Utils.showLoading(submitButton);
+            
+            try {
+                await APIService.createAppointment(doctorId, appointmentDate);
+                Utils.showNotification('Appointment booked successfully!', 'success');
+                Modal.hide('appointmentModal');
+                e.target.reset();
+            } catch (error) {
+                console.error('Failed to book appointment:', error);
+                Utils.showNotification(error.message || 'Failed to book appointment', 'error');
+            } finally {
+                stopLoading();
+            }
+        });
+
+        // Send family invitation
+        document.getElementById('inviteFamilyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const inviteeEmail = formData.get('invitee_email');
+            const relationshipType = formData.get('relationship_type');
+            
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const stopLoading = Utils.showLoading(submitButton);
+            
+            try {
+                await APIService.sendInvitation(inviteeEmail, relationshipType);
+                Utils.showNotification('Invitation sent successfully!', 'success');
+                Modal.hide('inviteFamilyModal');
+                e.target.reset();
+                await loadFamilyMembers();
+            } catch (error) {
+                console.error('Failed to send invitation:', error);
+                Utils.showNotification(error.message || 'Failed to send invitation', 'error');
+            } finally {
+                stopLoading();
+            }
+        });
+
+        // Respond to invitation
+        async function respondToInvitation(token, action) {
+            try {
+                await APIService.respondToInvitation(token, action);
+                Utils.showNotification(`Invitation ${action}ed successfully!`, 'success');
+                await loadPendingInvitations();
+                await loadFamilyMembers();
+            } catch (error) {
+                console.error('Failed to respond to invitation:', error);
+                Utils.showNotification(error.message || 'Failed to respond to invitation', 'error');
+            }
+        }
+
+        // Load my chats
+        async function loadMyChats() {
+            try {
+                Modal.show('chatRoomsModal');
+                const chatRooms = await APIService.getMyChats();
+                const container = document.getElementById('chatRoomsList');
+                
+                if (chatRooms.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-secondary py-8">
+                            <div class="text-6xl mb-4">💬</div>
+                            <p>No chat rooms available</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = chatRooms.map(room => `
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4 cursor-pointer hover:bg-gray-50" 
+                             onclick="openChat(${room.id})">
+                            <h4 class="font-semibold">${room.name}</h4>
+                            <p class="text-sm text-secondary">Click to join chat</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load chat rooms:', error);
+                document.getElementById('chatRoomsList').innerHTML = `
+                    <div class="text-center text-error py-4">
+                        <p>Failed to load chat rooms</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Open chat
+        function openChat(chatId) {
+            window.open(`chat.html?chatId=${chatId}`, '_blank');
+        }
+
+        // Load vitals when modal is shown
+        document.getElementById('vitalsModal').addEventListener('click', async (e) => {
+            if (e.target === e.currentTarget || e.target.classList.contains('modal-close')) return;
+            
+            try {
+                const vitals = await APIService.getVital();
+                const container = document.getElementById('vitalsContent');
+                
+                if (vitals.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-secondary py-8">
+                            <div class="text-6xl mb-4">📊</div>
+                            <p>No vital signs recorded yet</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="space-y-4">
+                            ${vitals.map(vital => `
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h4 class="font-semibold">Blood Pressure</h4>
+                                        <span class="text-sm text-secondary">${Utils.formatDate(vital.created_at || new Date())}</span>
+                                    </div>
+                                    <div class="text-2xl font-bold text-primary">${vital.bp} mmHg</div>
+                                    <div class="text-sm text-secondary">Recorded by Dr. ${vital.doctor?.name || 'Unknown'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load vitals:', error);
+                document.getElementById('vitalsContent').innerHTML = `
+                    <div class="text-center text-error py-4">
+                        <p>Failed to load vitals</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Set minimum date for appointment booking
+        document.getElementById('appointmentDate').min = new Date().toISOString().slice(0, 16);
+    </script>
+</body>
+</html>
