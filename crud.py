@@ -2,6 +2,8 @@ from sqlalchemy.orm import session
 from sqlalchemy import func
 import models, schemas
 from datetime import datetime, time, timedelta
+import hashlib
+import main
 
 def insert_patient(db : session, user : schemas.InsertPatient):
     patient = models.User(
@@ -110,31 +112,71 @@ def get_vitals(patient : models.User):
     return patient.vitals
 
 
+# def set_doctor_availability(
+#     request: schemas.DoctorAvailability, 
+#     doctor_id : int,
+#     db: session
+# ):
+#     doctor_availability = models.DoctorAvailability(
+#         doctor_id= doctor_id,
+#         day_of_week=request.day_of_week,
+#         start_time=request.start_time,
+#         end_time=request.end_time,
+#         appointment_duration=request.appointment_duration,
+#         break_start=request.break_start,
+#         break_end=request.break_end
+#     )
+
+#     db.add(doctor_availability)
+#     db.commit()
+#     db.refresh(doctor_availability)
+#     return doctor_availability
+
 def set_doctor_availability(
-    request: schemas.DoctorAvailability, 
-    doctor_id : int,
+    request: schemas.SetAvailabilityRequest, 
+    doctor_id: int,
     db: session
 ):
-    doctor_availability = models.DoctorAvailability(
-        doctor_id= doctor_id,
-        day_of_week=request.day_of_week,
-        start_time=request.start_time,
-        end_time=request.end_time,
-        appointment_duration=request.appointment_duration,
-        break_start=request.break_start,
-        break_end=request.break_end
-    )
+    # First delete existing availability entries for doctor
+    db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.doctor_id == doctor_id
+    ).delete()
 
-    db.add(doctor_availability)
+    # Add all new availabilities
+    for item in request.availabilities:
+        doctor_availability = models.DoctorAvailability(
+            doctor_id=doctor_id,
+            day_of_week=item.day_of_week,
+            start_time=item.start_time,
+            end_time=item.end_time,
+            appointment_duration=item.appointment_duration,
+            break_start=item.break_start,
+            break_end=item.break_end
+        )
+        db.add(doctor_availability)
+
     db.commit()
-    db.refresh(doctor_availability)
-    return doctor_availability
+
+    # Optionally return all current availabilities for confirmation
+    return db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.doctor_id == doctor_id
+    ).all()
 
 
-def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
+async def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
     accepted_appointments = db.query(models.Appointments).filter(models.Appointments.doctor_id == doctor_id,
                                           func.date(models.Appointments.date_time) == date,
-                                          models.Appointments.status.in_(['ACCECPTED'])).all()
+                                          models.Appointments.status.in_(['ACCECPTED', 'PENDING'])).all()
+
+    
+    pattern = f"slot_hold:doctor:{doctor_id}:{date.isoformat()}T*"
+    held_keys = await main.redis_client.keys(pattern)
+    held_times = set()
+    for key in held_keys:
+        # key is bytes, decode and parse timestamp suffix
+        _, _, _, iso_dt = key.decode().split(":", 3)
+        dt = datetime.fromisoformat(iso_dt)
+        held_times.add(dt.time())
     
     un_available_slots = [slot.date_time.time() for slot in accepted_appointments]
 
@@ -163,10 +205,22 @@ def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
 
     while current_time < doctor_end_time:
         slot_time = current_time.time()
-        if slot_time not in un_available_slots and (slot_time < doctor_break_start or slot_time >= doctor_break_end):
+
+        in_booked = slot_time in un_available_slots
+        in_held   = slot_time in held_times
+        in_break  = doctor_break_start and doctor_break_end and (doctor_break_start <= slot_time < doctor_break_end)
+
+        if not (in_booked or in_held or in_break):
                     available_slots.append(slot_time)
+
         current_time = current_time + timedelta(minutes=doctor_appointment_duration)
 
     return available_slots
+
+
+def make_slot_key(doctor_id : int, slot_time : datetime):
+    normalized_dt = slot_time.replace(microsecond=0, tzinfo=None)
+    raw =  f'slot_hold:doctor:{doctor_id}:{normalized_dt.isoformat()}'
+    return raw
 
 
