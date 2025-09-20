@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="token"></div>
+</body>
+<script>
+    async function test(){
+        const response = await fetch('http://127.0.0.1:8000/token',{
+            method: 'POST',
+            headers : {'Content-Type' : 'application/x-www-form-urlencoded'},
+            body : new URLSearchParams({
+                        username: 'vedant@example.com',
+                        password: 'vedant'
+            })
+        })
+        const res_json = await response.json()
+        console.log(res_json) 
+        const user_id = res_json.user_id;
+        const role = res_json.role;
+        const token = res_json.access_token;
+
+        document.getElementById('token').innerHTML = `<p> hello, your user id is ${user_id}, your role is ${role} </p>`;
+    }
+    test()
+</script>
+</html>

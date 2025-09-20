@@ -101,6 +101,7 @@
     </div>
 
     <script>
+        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
         document.getElementById('registerForm').addEventListener('submit', async function (event) {
             event.preventDefault();
 
@@ -110,7 +111,7 @@
             const dob = document.getElementById('dob').value;
 
             try {
-                const response = await fetch('http://127.0.0.1:8000/register_patient', {
+                const response = await fetch(`${API_BASE_URL}/register_patient`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

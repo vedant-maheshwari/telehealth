@@ -8,6 +8,7 @@
   <div id="invites"></div>
 
   <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
     async function loadInvitations() {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -17,7 +18,7 @@
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/family/family_invitation_for_current_user", {
+        const response = await fetch(`${API_BASE_URL}/family/family_invitation_for_current_user`, {
           headers: {
             "Authorization": "Bearer " + token
           }
@@ -46,7 +47,7 @@
     async function respondInvitation(inviteToken, action) {
       const token = localStorage.getItem("token");
       try {
-        const response = await fetch("http://127.0.0.1:8000/family/respond_invitation", {
+        const response = await fetch(`${API_BASE_URL}/family/respond_invitation`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

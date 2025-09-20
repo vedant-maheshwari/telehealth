@@ -1,8 +1,9 @@
+from fastapi.staticfiles import StaticFiles
 import schemas, utils, models
 from sqlalchemy.orm import session
 from database import Base, SessionLocal, engine
-from fastapi import FastAPI, HTTPException, Depends, Request, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, FastAPI, HTTPException, Depends, Request, Query
+from fastapi.responses import JSONResponse, RedirectResponse
 import crud
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm
@@ -22,6 +23,21 @@ from datetime import datetime, date, time
 import redis.asyncio as redis
 import asyncio
 from contextlib import asynccontextmanager
+import os
+import socket
+
+async def listen_for_expired_keys():
+    pubsub = redis_client.pubsub()
+    await pubsub.subscribe("__keyevent@0__:expired")
+    async for message in pubsub.listen():
+        if message['type'] == 'message':
+            expired_key = message['data'].decode()
+            # Parse expired_key to extract doctor_id, slot_time
+            if expired_key.startswith("slot_hold:doctor:"):
+                parts = expired_key.split(":")
+                doctor_id = int(parts[2])
+                slot_time = datetime.fromisoformat(parts[3])
+                await realtime.notify_slot_update(doctor_id, slot_time, "freed")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,7 +85,22 @@ Base.metadata.create_all(engine)
 
 app = FastAPI(lifespan=lifespan)
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
+
+# api_router = APIRouter()
+
+# redis_client = redis.Redis(host='localhost', port=6379, db=0)
+
+# Try resolving "redis" inside Docker
+# try:
+#     socket.gethostbyname("redis")
+#     default_url = "redis://redis:6379/0"
+# except socket.gaierror:
+#     default_url = "redis://localhost:6379/0"
+
+# redis_client = redis.from_url(default_url)
+REDIS_URL = os.getenv("REDIS_URL")
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request : Request, exc : Exception):
@@ -105,6 +136,8 @@ app.include_router(chat_auth)
 app.include_router(admin_router)
 app.include_router(realtime_router)
 
+# app.include_router(api_router, prefix="/api")
+
 def get_db():
     db = SessionLocal()
     try:
@@ -112,6 +145,10 @@ def get_db():
     finally:
         db.close()
 
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/frontend/")
 
 @app.post('/register_patient', response_model=schemas.UsersOut)
 def create_patient(patient : schemas.InsertPatient, db : session = Depends(get_db)):
@@ -310,19 +347,26 @@ async def cancel_slot(doctor_id: int, slot_time: datetime, user_id: int):
         return {"message": "Reservation cancelled and slot freed"}
     raise HTTPException(404, "No active reservation found")
 
-async def listen_for_expired_keys():
-    pubsub = redis_client.pubsub()
-    await pubsub.subscribe("__keyevent@0__:expired")
-    async for message in pubsub.listen():
-        if message['type'] == 'message':
-            expired_key = message['data'].decode()
-            # Parse expired_key to extract doctor_id, slot_time
-            if expired_key.startswith("slot_hold:doctor:"):
-                parts = expired_key.split(":")
-                doctor_id = int(parts[2])
-                slot_time = datetime.fromisoformat(parts[3])
-                await realtime.notify_slot_update(doctor_id, slot_time, "freed")
+@app.get('/patient/appointments')
+def get_patient_appointments(
+    current_user = Depends(auth.check_patient),  # Only patients can access
+    db: session = Depends(get_db)
+):
+    """Get appointments for the current patient"""
+    appointments = db.query(models.Appointments).filter(
+        models.Appointments.patient_id == current_user.id
+    ).all()
+    
+    return appointments
 
-# @app.on_event("startup")
-# async def startup_event():
-#     asyncio.create_task(listen_for_expired_keys())
+
+@app.get("/redis_test")
+async def redis_test():
+    try:
+        pong = await redis_client.ping()
+        return {"status": "success", "message": "Redis connection successful", "pong": pong}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+    
+

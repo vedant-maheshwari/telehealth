@@ -5,3 +5,6 @@ docker buildx build \
   -t vedantm23/telehealth \
   --push \
   .
+
+
+docker compose up -d

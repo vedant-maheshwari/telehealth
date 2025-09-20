@@ -49,9 +49,10 @@
   </div>
 
   <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
     async function loadFamily() {
       const token = sessionStorage.getItem("token");
-      const res = await fetch("http://127.0.0.1:8000/family/get_all_family_members", {
+      const res = await fetch(`${API_BASE_URL}/family/get_all_family_members`, {
         headers: { "Authorization": "Bearer " + token }
       });
       const data = await res.json();
@@ -75,7 +76,7 @@
       const relationship = document.getElementById("relationship").value;
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://127.0.0.1:8000/family/send_invitation", {
+      const res = await fetch(`${API_BASE_URL}/family/send_invitation`, {
         method: "POST",
         headers: { 
           "Authorization": "Bearer " + token,
