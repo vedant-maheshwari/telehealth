@@ -323,6 +323,16 @@ async def listen_for_expired_keys():
                 slot_time = datetime.fromisoformat(parts[3])
                 await realtime.notify_slot_update(doctor_id, slot_time, "freed")
 
-# @app.on_event("startup")
-# async def startup_event():
-#     asyncio.create_task(listen_for_expired_keys())
+@app.get('/patient/appointments')
+def get_patient_appointments(
+    current_user = Depends(auth.check_patient),  # Only patients can access
+    db: session = Depends(get_db)
+):
+    """Get appointments for the current patient"""
+    appointments = db.query(models.Appointments).filter(
+        models.Appointments.patient_id == current_user.id
+    ).all()
+    
+    return appointments
+    
+

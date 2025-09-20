@@ -422,34 +422,6 @@
       }
     }
 
-    // async function confirmSlot() {
-    //   if (!ownReservedKey) {
-    //     showStatus('No reserved slot to confirm', true);
-    //     return;
-    //   }
-
-    //   const [doctorId, appointmentDateTime] = ownReservedKey.split(':');
-    //   const appointment = {
-    //     doctor_id: Number(doctorId),
-    //     appointment_date: appointmentDateTime
-    //   };
-
-    //   try {
-    //     const url = `${API_BASE_URL}/confirm_slot?user_id=${selectedUserId}`;
-    //     const result = await fetchWithErrorHandling(url, {
-    //       method: 'POST',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify(appointment)
-    //     });
-
-    //     showStatus('Booking confirmed successfully!');
-    //     ownReservedKey = null;
-    //     modal.style.display = 'none';
-    //     setTimeout(loadSlots, 1000);
-    //   } catch (error) {
-    //     console.error('Failed to confirm slot:', error);
-    //   }
-    // }
 
     async function confirmSlot() {
   if (!ownReservedKey) {

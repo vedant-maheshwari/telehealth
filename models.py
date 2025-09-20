@@ -170,3 +170,4 @@ class DoctorAvailability(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     
     doctor: Mapped["User"] = relationship(back_populates="availability_settings")
+    

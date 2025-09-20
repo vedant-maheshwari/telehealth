@@ -149,27 +149,28 @@
 
     // === CHAT ROOMS ===
     async function viewMyChats() {
-      const token = sessionStorage.getItem("token");
-      const res = await fetch("http://127.0.0.1:8000/chats/my", {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      const chats = await res.json();
+      // const token = sessionStorage.getItem("token");
+      // const res = await fetch("http://127.0.0.1:8000/chats/my", {
+      //   headers: { "Authorization": "Bearer " + token }
+      // });
+      // const chats = await res.json();
 
-      const chatRoomsDiv = document.getElementById("chatRooms");
-      chatRoomsDiv.innerHTML = "";
+      // const chatRoomsDiv = document.getElementById("chatRooms");
+      // chatRoomsDiv.innerHTML = "";
 
-      chats.forEach(c => {
-        const card = document.createElement("div");
-        card.className = "chat-card";
-        card.innerHTML = `
-          <h3>${c.name || "Chat Room"}</h3>
-          <p>Room ID: ${c.id}</p>
-          <button onclick="openChat(${c.id})">Open</button>
-        `;
-        chatRoomsDiv.appendChild(card);
-      });
+      // chats.forEach(c => {
+      //   const card = document.createElement("div");
+      //   card.className = "chat-card";
+      //   card.innerHTML = `
+      //     <h3>${c.name || "Chat Room"}</h3>
+      //     <p>Room ID: ${c.id}</p>
+      //     <button onclick="openChat(${c.id})">Open</button>
+      //   `;
+      //   chatRoomsDiv.appendChild(card);
+      // });
 
-      document.getElementById("chatModal").style.display = "block";
+      // document.getElementById("chatModal").style.display = "block";
+      window.location.href = `chat.html`;
     }
 
     function closeChatModal() { document.getElementById("chatModal").style.display = "none"; }
