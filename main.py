@@ -1,8 +1,9 @@
+from fastapi.staticfiles import StaticFiles
 import schemas, utils, models
 from sqlalchemy.orm import session
 from database import Base, SessionLocal, engine
-from fastapi import FastAPI, HTTPException, Depends, Request, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, FastAPI, HTTPException, Depends, Request, Query
+from fastapi.responses import JSONResponse, RedirectResponse
 import crud
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm
@@ -84,17 +85,22 @@ Base.metadata.create_all(engine)
 
 app = FastAPI(lifespan=lifespan)
 
+app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
+
+# api_router = APIRouter()
+
 # redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 # Try resolving "redis" inside Docker
-try:
-    socket.gethostbyname("redis")
-    default_url = "redis://redis:6379/0"
-except socket.gaierror:
-    default_url = "redis://localhost:6379/0"
+# try:
+#     socket.gethostbyname("redis")
+#     default_url = "redis://redis:6379/0"
+# except socket.gaierror:
+#     default_url = "redis://localhost:6379/0"
 
-redis_client = redis.from_url(default_url)
-
+# redis_client = redis.from_url(default_url)
+REDIS_URL = os.getenv("REDIS_URL")
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request : Request, exc : Exception):
@@ -130,6 +136,8 @@ app.include_router(chat_auth)
 app.include_router(admin_router)
 app.include_router(realtime_router)
 
+# app.include_router(api_router, prefix="/api")
+
 def get_db():
     db = SessionLocal()
     try:
@@ -137,6 +145,10 @@ def get_db():
     finally:
         db.close()
 
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/frontend/")
 
 @app.post('/register_patient', response_model=schemas.UsersOut)
 def create_patient(patient : schemas.InsertPatient, db : session = Depends(get_db)):
@@ -346,5 +358,15 @@ def get_patient_appointments(
     ).all()
     
     return appointments
+
+
+@app.get("/redis_test")
+async def redis_test():
+    try:
+        pong = await redis_client.ping()
+        return {"status": "success", "message": "Redis connection successful", "pong": pong}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
     
 

@@ -62,6 +62,7 @@
   </div>
 
   <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
     // Fetch current user info
     async function loadUser() {
       const token = sessionStorage.getItem("token");
@@ -69,7 +70,7 @@
         window.location.href = "login.html";
         return;
       }
-      const res = await fetch("http://127.0.0.1:8000/user/me", {
+      const res = await fetch(`${API_BASE_URL}/user/me`, {
         headers: { "Authorization": "Bearer " + token }
       });
       const user = await res.json();

@@ -19,6 +19,7 @@
     </form>
 
     <script>
+        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
         document.getElementById('invite').addEventListener('submit', async function (event) {
             event.preventDefault();
 
@@ -33,7 +34,7 @@
             const relation = document.getElementById('relationship').value;
 
             try{
-                const response = await fetch('http://127.0.0.1:8000/family/send_invitation',{
+                const response = await fetch(`${API_BASE_URL}/family/send_invitation`,{
                     method : 'POST',
                     headers : {
                         "Content-Type": "application/json",

@@ -103,11 +103,12 @@
   </div>
 
   <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
     async function loadUser() {
       const token = sessionStorage.getItem("token");
       if (!token) { window.location.href = "login.html"; return; }
       try {
-        const res = await fetch("http://127.0.0.1:8000/user/me", {
+        const res = await fetch(`${API_BASE_URL}/user/me`, {
           headers: { "Authorization": "Bearer " + token }
         });
         if (!res.ok) throw new Error("Unauthorized");
@@ -154,7 +155,7 @@
         .map(s => Number(s.trim()))
         .filter(n => !isNaN(n));
 
-      const res = await fetch("http://127.0.0.1:8000/chats/create", {
+      const res = await fetch(`${API_BASE_URL}/chats/create`, {
         method: "POST",
         headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
         body: JSON.stringify({ name, participant_ids })
@@ -173,7 +174,7 @@
     // === VIEW CHATS ===
     async function viewMyChats() {
       const token = sessionStorage.getItem("token");
-      const res = await fetch("http://127.0.0.1:8000/chats/my", {
+      const res = await fetch(`${API_BASE_URL}/chats/my`, {
         headers: { "Authorization": "Bearer " + token }
       });
       const chats = await res.json();
@@ -208,7 +209,7 @@
 
       const token = sessionStorage.getItem("token");
       try {
-        const res = await fetch("http://127.0.0.1:8000/add_vital", {
+        const res = await fetch(`${API_BASE_URL}/add_vital`, {
           method: "POST",
           headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
           body: JSON.stringify({ patient_email: email, bp })

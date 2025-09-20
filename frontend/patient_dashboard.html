@@ -125,6 +125,7 @@
   </div>
 
   <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
     async function loadUser() {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -132,7 +133,7 @@
         return;
       }
       try {
-        const res = await fetch("http://127.0.0.1:8000/user/me", {
+        const res = await fetch(`${API_BASE_URL}/user/me`, {
           headers: { "Authorization": "Bearer " + token }
         });
         if (!res.ok) throw new Error("Unauthorized");
@@ -150,7 +151,7 @@
     // === CHAT ROOMS ===
     async function viewMyChats() {
       // const token = sessionStorage.getItem("token");
-      // const res = await fetch("http://127.0.0.1:8000/chats/my", {
+      // const res = await fetch(`${API_BASE_URL}/chats/my", {
       //   headers: { "Authorization": "Bearer " + token }
       // });
       // const chats = await res.json();
@@ -183,7 +184,7 @@
     async function viewVitals() {
       const token = sessionStorage.getItem("token");
       try {
-        const res = await fetch("http://127.0.0.1:8000/get_vital", {
+        const res = await fetch(`${API_BASE_URL}/get_vital`, {
           headers: { "Authorization": "Bearer " + token }
         });
         if (!res.ok) throw new Error("Failed to fetch vitals");

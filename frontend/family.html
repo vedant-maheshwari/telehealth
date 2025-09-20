@@ -81,6 +81,7 @@
     </div>
 
     <script>
+        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
         async function load_family() {
             const token = sessionStorage.getItem('token');
             if (!token) {
@@ -90,7 +91,7 @@
             }
 
             try{
-                const response = await fetch('http://127.0.0.1:8000/user/me',{
+                const response = await fetch(`${API_BASE_URL}/user/me`,{
                     headers: {
                         "Authorization": "Bearer " + token
                     }
@@ -106,7 +107,7 @@
             }
 
             try {
-                const response = await fetch("http://127.0.0.1:8000/family/get_all_family_members", {
+                const response = await fetch(`${API_BASE_URL}/family/get_all_family_members`, {
                     headers: {
                         "Authorization": "Bearer " + token
                     }

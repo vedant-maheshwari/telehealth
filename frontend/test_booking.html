@@ -185,7 +185,7 @@
   </div>
 
   <script>
-    const API_BASE_URL = 'http://localhost:8000'; // Change if your backend runs elsewhere
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
 
     let wsConnection = null;
     let selectedSlot = null;
@@ -293,7 +293,7 @@
       }
 
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//localhost:8000/ws/doctor/${doctorId}/slots`;
+      const wsUrl = `${protocol}//${API_BASE_URL}/ws/doctor/${doctorId}/slots`;
 
       wsConnection = new WebSocket(wsUrl);
 

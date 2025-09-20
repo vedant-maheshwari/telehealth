@@ -70,6 +70,7 @@
   </div>
 
   <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
     document.addEventListener('DOMContentLoaded', async function() {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -77,7 +78,7 @@
         return;
       }
 
-      const res = await fetch("http://127.0.0.1:8000/get_all_appointments", {
+      const res = await fetch(`${API_BASE_URL}/get_all_appointments`, {
         headers: { "Authorization": "Bearer " + token }
       });
       let events = await res.json();
@@ -123,7 +124,7 @@
 
       async function respond(action, appointmentId) {
         const modal = document.getElementById("appointmentModal");
-        const response = await fetch("http://127.0.0.1:8000/appointment_response", {
+        const response = await fetch(`${API_BASE_URL}/appointment_response`, {
           method: "PUT",
           headers: {
             "Authorization": "Bearer " + token,

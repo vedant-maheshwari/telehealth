@@ -426,7 +426,7 @@
 
         async function loadHistory() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/chats/${chatId}/messages`, {
+                const res = await fetch(`${API_BASE_URL}/chats/${chatId}/messages`, {
                     headers: { "Authorization": "Bearer " + token }
                 });
                 
@@ -472,7 +472,7 @@
             try {
                 updateConnectionStatus('connecting', 'Connecting...');
                 
-                const tRes = await fetch("http://127.0.0.1:8000/ws-token", {
+                const tRes = await fetch(`${API_BASE_URL}/ws-token`, {
                     method: "POST",
                     headers: { "Authorization": "Bearer " + token }
                 });
@@ -482,7 +482,7 @@
                 }
                 
                 const { ws_token } = await tRes.json();
-                const ws = new WebSocket(`ws://127.0.0.1:8000/chats/ws/${chatId}?ws_token=${ws_token}`);
+                const ws = new WebSocket(`ws://${API_BASE_URL}/chats/ws/${chatId}?ws_token=${ws_token}`);
 
                 ws.onopen = () => {
                     console.log("WebSocket connected");

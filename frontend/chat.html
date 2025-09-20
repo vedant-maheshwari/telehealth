@@ -67,6 +67,7 @@
     </div>
 
     <script>
+        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
         const token = sessionStorage.getItem("token") || localStorage.getItem('authToken');
         const role = sessionStorage.getItem("role") || localStorage.getItem('userRole');
         const userId = sessionStorage.getItem("user_id") || localStorage.getItem('userId');
@@ -108,7 +109,7 @@
             container.innerHTML = '<div class="loading">Loading chat rooms...</div>';
             
             try {
-                const res = await fetch("http://127.0.0.1:8000/chats/my", {
+                const res = await fetch(`${API_BASE_URL}/chats/my`, {
                     headers: { "Authorization": "Bearer " + token }
                 });
                 
@@ -207,7 +208,7 @@
             }
             
             try {
-                const res = await fetch("http://127.0.0.1:8000/chats/create", {
+                const res = await fetch(`${API_BASE_URL}/chats/create`, {
                     method: "POST",
                     headers: { 
                         "Authorization": "Bearer " + token, 

@@ -1,20 +1,18 @@
-# Base image
+# Use official Python base image
 FROM python:3.11.6
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Copy requirements first (better for caching)
+# Copy and install dependencies (better cache)
 COPY requirements.txt .
-
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
+# Copy all source code including frontend static files
 COPY . .
 
-# Expose FastAPI port
-EXPOSE 8000 3000
+# Expose only one port (FastAPI server port)
+EXPOSE 8000
 
-# Run the app
-CMD ["python", "run.py"]
+# Run FastAPI via Uvicorn on port 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
