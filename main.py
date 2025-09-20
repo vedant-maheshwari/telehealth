@@ -22,6 +22,21 @@ from datetime import datetime, date, time
 import redis.asyncio as redis
 import asyncio
 from contextlib import asynccontextmanager
+import os
+import socket
+
+async def listen_for_expired_keys():
+    pubsub = redis_client.pubsub()
+    await pubsub.subscribe("__keyevent@0__:expired")
+    async for message in pubsub.listen():
+        if message['type'] == 'message':
+            expired_key = message['data'].decode()
+            # Parse expired_key to extract doctor_id, slot_time
+            if expired_key.startswith("slot_hold:doctor:"):
+                parts = expired_key.split(":")
+                doctor_id = int(parts[2])
+                slot_time = datetime.fromisoformat(parts[3])
+                await realtime.notify_slot_update(doctor_id, slot_time, "freed")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -69,7 +84,17 @@ Base.metadata.create_all(engine)
 
 app = FastAPI(lifespan=lifespan)
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+# redis_client = redis.Redis(host='localhost', port=6379, db=0)
+
+# Try resolving "redis" inside Docker
+try:
+    socket.gethostbyname("redis")
+    default_url = "redis://redis:6379/0"
+except socket.gaierror:
+    default_url = "redis://localhost:6379/0"
+
+redis_client = redis.from_url(default_url)
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request : Request, exc : Exception):
@@ -309,19 +334,6 @@ async def cancel_slot(doctor_id: int, slot_time: datetime, user_id: int):
         await realtime.notify_slot_update(doctor_id, slot_time, "freed")
         return {"message": "Reservation cancelled and slot freed"}
     raise HTTPException(404, "No active reservation found")
-
-async def listen_for_expired_keys():
-    pubsub = redis_client.pubsub()
-    await pubsub.subscribe("__keyevent@0__:expired")
-    async for message in pubsub.listen():
-        if message['type'] == 'message':
-            expired_key = message['data'].decode()
-            # Parse expired_key to extract doctor_id, slot_time
-            if expired_key.startswith("slot_hold:doctor:"):
-                parts = expired_key.split(":")
-                doctor_id = int(parts[2])
-                slot_time = datetime.fromisoformat(parts[3])
-                await realtime.notify_slot_update(doctor_id, slot_time, "freed")
 
 @app.get('/patient/appointments')
 def get_patient_appointments(
