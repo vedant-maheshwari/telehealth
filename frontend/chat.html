@@ -68,6 +68,7 @@
 
     <script>
         const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
+        const API_BASE_URL_without_http = "telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
         const token = sessionStorage.getItem("token") || localStorage.getItem('authToken');
         const role = sessionStorage.getItem("role") || localStorage.getItem('userRole');
         const userId = sessionStorage.getItem("user_id") || localStorage.getItem('userId');

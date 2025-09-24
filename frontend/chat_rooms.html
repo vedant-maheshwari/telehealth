@@ -350,6 +350,9 @@
     </div>
 
     <script>
+
+        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; 
+        const API_BASE_URL_without_http = "telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
         function goBack() {
             const role = sessionStorage.getItem("role");
             if (role === "doctor") {
@@ -482,7 +485,7 @@
                 }
                 
                 const { ws_token } = await tRes.json();
-                const ws = new WebSocket(`ws://${API_BASE_URL}/chats/ws/${chatId}?ws_token=${ws_token}`);
+                const ws = new WebSocket(`wss://${API_BASE_URL_without_http}/chats/ws/${chatId}?ws_token=${ws_token}`);
 
                 ws.onopen = () => {
                     console.log("WebSocket connected");

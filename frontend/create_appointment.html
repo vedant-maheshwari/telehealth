@@ -355,6 +355,7 @@
 
   <script>
     const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
+    const API_BASE_URL_without_http = "telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
 
     let wsConnection = null;
     let selectedSlot = null;
@@ -462,7 +463,7 @@
       }
 
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//localhost:8000/ws/doctor/${doctorId}/slots`;
+      const wsUrl = `${protocol}//${API_BASE_URL_without_http}/ws/doctor/${doctorId}/slots`;
 
       wsConnection = new WebSocket(wsUrl);
 
@@ -622,7 +623,7 @@
   console.log("Sending appointment JSON:", JSON.stringify(appointment));
 
   try {
-    const url = `${API_BASE_URL}/confirm_slot/?user_id=${selectedUserId}`;
+    const url = `${API_BASE_URL}/confirm_slot?user_id=${selectedUserId}`;
     const result = await fetchWithErrorHandling(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -173,8 +173,9 @@ async def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
     held_keys = await main.redis_client.keys(pattern)
     held_times = set()
     for key in held_keys:
-        # key is bytes, decode and parse timestamp suffix
-        _, _, _, iso_dt = key.decode().split(":", 3)
+        if isinstance(key, bytes):
+            key = key.decode()
+        _, _, _, iso_dt = key.split(":", 3)
         dt = datetime.fromisoformat(iso_dt)
         held_times.add(dt.time())
     
