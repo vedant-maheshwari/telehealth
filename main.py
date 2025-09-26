@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi.staticfiles import StaticFiles
 import schemas, utils, models
 from sqlalchemy.orm import session
@@ -25,6 +28,8 @@ import asyncio
 from contextlib import asynccontextmanager
 import os
 import socket
+
+
 
 async def listen_for_expired_keys():
     pubsub = redis_client.pubsub()
