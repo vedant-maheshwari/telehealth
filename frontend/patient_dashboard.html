@@ -1,226 +1,1037 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Patient Dashboard</title>
   <style>
+    /* Base styles, responsive tabs and layouts as done before */
+
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f8fc;
-      margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9fafb;
+      color: #333;
+      min-height: 100vh;
     }
     header {
-      background: #1976d2;
-      color: #fff;
-      padding: 15px;
+      background: #2563eb;
+      color: white;
+      padding: 1.5rem;
       text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
     }
     .container {
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #e4e7eb;
+      user-select: none;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.25rem;
+    }
+    .tab {
+      flex: 1 0 140px;
+      min-width: 140px;
+      text-align: center;
+      padding: 1rem 0;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #6b7280;
+      background: #f9fafb;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      scroll-snap-align: start;
+    }
+    .tab.active {
+      background: #fff;
+      color: #2563eb;
+      box-shadow: 0 -2px 8px rgba(37, 99, 235, 0.3);
+      border-bottom: 2px solid white;
+    }
+    .tab:not(.active):hover {
+      background: #f3f4f6;
+      color: #1471db;
+    }
+    .section {
+      display: none;
+      animation: fadeIn 0.35s ease forwards;
+    }
+    .section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
     }
     .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      padding: 1.5rem 1.75rem;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgb(0 0 0 / 0.05);
+      background: #fff;
+      color: #1e293b;
     }
-    button {
-      padding: 10px 15px;
-      border: none;
-      background: #1976d2;
+    .card h3 {
+      font-weight: 700;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .button {
+      display: inline-block;
+      padding: 0.6rem 1.25rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      background: #2563eb;
       color: white;
-      border-radius: 6px;
+      border: none;
       cursor: pointer;
-      margin-top: 10px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
     }
-    button:hover {
-      background: #125aa1;
+    .button:hover {
+      background: #1e40af;
     }
-
-    /* Modal Styles */
-    .modal {
+    
+    /* Family sub-tabs */
+    .subtabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .subtab {
+      flex: 1;
+      padding: 0.75rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      font-weight: 600;
+      text-align: center;
+      background: #f9fafb;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.3s;
+      user-select: none;
+    }
+    .subtab.active {
+      border-bottom-color: #2563eb;
+      background: white;
+      color: #2563eb;
+      font-weight: 700;
+    }
+    .subtab:hover:not(.active) {
+      background: #f3f4f6;
+      color: #1471db;
+    }
+    .subsection {
       display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
     }
-    .modal-content {
+    .subsection.active {
+      display: block;
+    }
+    
+    /* Form styles for family invitations */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    /* Vitals styles */
+    .vital-item {
+      background: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-left: 4px solid #6366f1;
+    }
+    .vital-date {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .vital-value {
+      color: #4b5563;
+      margin-bottom: 0.25rem;
+    }
+    
+    /* Member item styles */
+    .member-item {
+      background: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+    }
+    .member-info {
+      flex: 1;
+    }
+    .member-name {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+      font-size: 1.1rem;
+    }
+    .member-relation {
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+    
+    /* Chat styles within chats tab */
+    #chatLanding, #chatMessages {
+      margin-top: 1rem;
+    }
+    #chatMessages {
+      display: none;
+      flex-direction: column;
+      height: 400px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .chat-header {
+      padding: 1rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    #messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+    .message-bubble {
+      max-width: 70%;
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+      word-wrap: break-word;
+      position: relative;
+      line-height: 1.4;
+    }
+    .message-bubble.own {
+      align-self: flex-end;
+      background: #6366f1;
+      color: white;
+      border-bottom-right-radius: 0.25rem;
+    }
+    .message-bubble.other {
+      align-self: flex-start;
+      background: white;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 0.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .message-meta {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      text-align: right;
+      margin-top: 0.25rem;
+    }
+    #inputRow {
+      padding: 0.8rem 1rem;
       background: #fff;
-      margin: 10% auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 500px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
     }
-    .close {
-      float: right;
-      font-size: 20px;
+    #txt {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 1.5rem;
+      outline: none;
+      font-family: inherit;
+      font-size: 1rem;
+      resize: none;
+      min-height: 2.5rem;
+      max-height: 6rem;
+      transition: border-color 0.2s;
+    }
+    #txt:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    #send {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 1.5rem;
+      font-weight: 500;
       cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
     }
-    .chat-card, .vital-card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 10px 0;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    #send:hover:not(:disabled) {
+      background: #5b21b6;
+      transform: translateY(-1px);
     }
-    .vital-card p {
-      margin: 5px 0;
+    #send:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Empty state styles */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+    }
+    .empty-state h4 {
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+    }
+    .error-state {
+      text-align: center;
+      padding: 2rem;
+      color: #ef4444;
+    }
+    .error-state h4 {
+      margin-bottom: 0.5rem;
+    }
+    .loading-state {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container {
+        margin: 1rem;
+        padding: 1.25rem;
+      }
+      .subtabs {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .subtab {
+        flex: none;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h2>Patient Dashboard</h2>
-  </header>
+  <header>Patient Dashboard</header>
   <div class="container">
-    <div class="card">
-      <h3>Welcome, <span id="userName"></span></h3>
-      <p>Email: <span id="userEmail"></span></p>
+    <div class="tabs" role="tablist" aria-label="Patient dashboard navigation">
+      <div class="tab active" role="tab" aria-selected="true" tabindex="0" data-target="profile">Profile</div>
+      <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="chats">Chats</div>
+      <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="vitals">Vitals</div>
+      <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="appointments">Appointments</div>
+      <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="family">Family</div>
     </div>
 
-    <div class="card">
-      <h3>Manage</h3>
-      <button onclick="window.location.href='family_management.html'">Family Management</button>
-      <button onclick="window.location.href='create_appointment.html'">Create Appointment</button>
-    </div>
+    <section id="profile" class="section active" role="tabpanel">
+      <div class="card" aria-live="polite" aria-atomic="true">
+        <h3>Welcome, <span id="userName"></span></h3>
+        <p>Email: <span id="userEmail"></span></p>
+      </div>
+   
+      <div class="card">
+        <button class="button" onclick="logout()">Logout</button>
+      </div>
+    </section>
 
-    <div class="card">
-      <h3>Chat</h3>
-      <button onclick="viewMyChats()">View My Chats</button>
-    </div>
+    <section id="chats" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
+      <button class="button" id="showRoomsBtn" type="button">Show All Chats</button>
 
-    <div class="card">
-      <h3>Vitals</h3>
-      <button onclick="viewVitals()">View My Vitals</button>
-    </div>
+      <div id="chatLanding" class="card">
+        <h3>Your Chat Rooms</h3>
+        <div id="chatRooms">Loading...</div>
+      </div>
 
-    <div class="card">
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
+      <div id="chatMessages">
+        <div class="chat-header">
+          <h3 id="chatTitle">Chat Room</h3>
+        </div>
+        <div id="messages"></div>
+        <div id="inputRow">
+          <textarea id="txt" placeholder="Type your message..." rows="1"></textarea>
+          <button id="send" disabled>Send</button>
+        </div>
+      </div>
+    </section>
 
-  <!-- Modal for chat rooms -->
-  <div id="chatModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeChatModal()">&times;</span>
-      <h2>Your Chat Rooms</h2>
-      <div id="chatRooms"></div>
-    </div>
-  </div>
+    <section id="vitals" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
+      <div class="card">
+        <h3>My Vitals</h3>
+        <div id="vitalsContainer" class="loading-state">Loading...</div>
+      </div>
+    </section>
 
-  <!-- Modal for vitals -->
-  <div id="vitalsModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeVitalsModal()">&times;</span>
-      <h2>My Vitals</h2>
-      <div id="vitalsContainer"></div>
-    </div>
+    <section id="appointments" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
+      <div class="card">
+        <h3>Manage Appointments</h3>
+        <a href="create_appointment.html" class="button" role="button">Create Appointment</a>
+        <a href="appointments.html" class="button" role="button">View Appointments</a>
+      </div>
+    </section>
+
+    <section id="family" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
+      <div class="card">
+        <h3>Family Management</h3>
+        
+        <!-- Sub-tabs for family management -->
+        <div class="subtabs">
+          <button class="subtab active" data-subtarget="viewFamily" type="button">Your Family Members</button>
+          <button class="subtab" data-subtarget="sendInvitation" type="button">Send Invitation</button>
+        </div>
+        
+        <!-- View Family Members Sub-section -->
+        <div id="viewFamily" class="subsection active">
+          <div id="familyList" class="loading-state">Loading family members...</div>
+        </div>
+        
+        <!-- Send Invitation Sub-section -->
+        <div id="sendInvitation" class="subsection">
+          <form id="inviteForm">
+            <div class="form-group">
+              <label for="inviteEmail">Email of family member:</label>
+              <input type="email" id="inviteEmail" class="form-input" placeholder="Enter family member's email" required>
+            </div>
+            <div class="form-group">
+              <label for="relationship">Relationship:</label>
+              <input type="text" id="relationship" class="form-input" placeholder="e.g., Spouse, Child, Parent" required>
+            </div>
+            <button type="submit" class="button">Send Invitation</button>
+          </form>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
-    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
-    async function loadUser() {
-      const token = sessionStorage.getItem("token");
-      if (!token) {
-        window.location.href = "login.html";
-        return;
+    // Constants
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net";
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    
+    if(!token) { 
+      location.href = "login.html"; 
+    }
+
+    // Global variables
+    let wsClient = null;
+    let currentChatId = null;
+
+    // Tab navigation logic
+    const tabs = document.querySelectorAll('.tab');
+    const tabPanels = document.querySelectorAll('.section');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', (e) => {
+        const idx = Array.from(tabs).indexOf(tab);
+        if(e.key === 'ArrowRight'){
+          e.preventDefault();
+          activateTab(tabs[(idx + 1) % tabs.length]);
+        }else if(e.key === 'ArrowLeft'){
+          e.preventDefault();
+          activateTab(tabs[(idx + tabs.length - 1) % tabs.length]);
+        }
+      });
+    });
+
+    function activateTab(tab) {
+      tabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+        t.tabIndex = -1;
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      tab.tabIndex = 0;
+
+      tabPanels.forEach(s => {
+        s.classList.remove('active');
+        s.setAttribute('aria-hidden', 'true');
+        s.tabIndex = -1;
+      });
+
+      const target = tab.dataset.target;
+      const panel = document.getElementById(target);
+      panel.classList.add('active');
+      panel.setAttribute('aria-hidden', 'false');
+      panel.tabIndex = 0;
+
+      // Load content based on tab
+      if(target === 'chats'){
+        showChatLanding();
+        loadChats();
+      } else if(target === 'vitals'){
+        loadVitals();
+      } else if(target === 'family'){
+        loadFamily();
+      } else if(target === 'profile'){
+        loadUser();
       }
+
+      tab.focus();
+    }
+
+    // Family sub-tabs logic
+    const familySubtabs = document.querySelectorAll('.subtab');
+    const familySubsections = document.querySelectorAll('.subsection');
+
+    familySubtabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        familySubtabs.forEach(t => t.classList.remove('active'));
+        familySubsections.forEach(s => s.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const targetId = tab.dataset.subtarget;
+        document.getElementById(targetId).classList.add('active');
+      });
+    });
+
+    // User profile functionality
+    async function loadUser(){
       try {
         const res = await fetch(`${API_BASE_URL}/user/me`, {
           headers: { "Authorization": "Bearer " + token }
         });
-        if (!res.ok) throw new Error("Unauthorized");
+        if(!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
         const user = await res.json();
-        sessionStorage.setItem("user_id", user.id);
-        document.getElementById("userName").textContent = user.name;
-        document.getElementById("userEmail").textContent = user.email;
-      } catch (err) {
-        sessionStorage.clear();
-        alert("Please login again");
-        window.location.href = "login.html";
+        document.getElementById("userName").textContent = user.name || "User";
+        document.getElementById("userEmail").textContent = user.email || "No email";
+      } catch (error) {
+        console.error('Error loading user:', error);
+        document.getElementById("userName").textContent = "User";
+        document.getElementById("userEmail").textContent = "Unable to load email";
       }
     }
 
-    // === CHAT ROOMS ===
-    async function viewMyChats() {
-      // const token = sessionStorage.getItem("token");
-      // const res = await fetch(`${API_BASE_URL}/chats/my", {
-      //   headers: { "Authorization": "Bearer " + token }
-      // });
-      // const chats = await res.json();
-
-      // const chatRoomsDiv = document.getElementById("chatRooms");
-      // chatRoomsDiv.innerHTML = "";
-
-      // chats.forEach(c => {
-      //   const card = document.createElement("div");
-      //   card.className = "chat-card";
-      //   card.innerHTML = `
-      //     <h3>${c.name || "Chat Room"}</h3>
-      //     <p>Room ID: ${c.id}</p>
-      //     <button onclick="openChat(${c.id})">Open</button>
-      //   `;
-      //   chatRoomsDiv.appendChild(card);
-      // });
-
-      // document.getElementById("chatModal").style.display = "block";
-      window.location.href = `chat.html`;
-    }
-
-    function closeChatModal() { document.getElementById("chatModal").style.display = "none"; }
-    function openChat(chatId) {
-      if (!chatId) { alert("Chat ID required"); return; }
-      window.location.href = `chat.html?chatId=${chatId}`;
-    }
-
-    // === VITALS ===
-    async function viewVitals() {
-      const token = sessionStorage.getItem("token");
+    // Vitals functionality - Fixed and improved
+    async function loadVitals() {
+      const container = document.getElementById("vitalsContainer");
+      container.innerHTML = '<div class="loading-state">Loading vitals...</div>';
+      
       try {
         const res = await fetch(`${API_BASE_URL}/get_vital`, {
-          headers: { "Authorization": "Bearer " + token }
+          headers: { 
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          }
         });
-        if (!res.ok) throw new Error("Failed to fetch vitals");
-        const vitals = await res.json();
-
-        const container = document.getElementById("vitalsContainer");
-        container.innerHTML = "";
-        if (!vitals || vitals.length === 0) {
-          container.innerHTML = "<p>No vitals found.</p>";
-        } else {
-          vitals.forEach(v => {
-            const card = document.createElement("div");
-            card.className = "vital-card";
-            card.innerHTML = `
-              <p><strong>Date:</strong> ${v.date || "N/A"}</p>
-              <p><strong>BP:</strong> ${v.bp}</p>
+        
+        console.log('Vitals API response status:', res.status);
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            // No vitals found
+            container.innerHTML = `
+              <div class="empty-state">
+                <h4>No vitals recorded yet</h4>
+                <p>Your vital signs will appear here once recorded by your healthcare provider.</p>
+              </div>
             `;
-            container.appendChild(card);
-          });
+            return;
+          }
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         }
-
-        document.getElementById("vitalsModal").style.display = "block";
-      } catch (err) {
-        alert("Error fetching vitals");
-        console.error(err);
+        
+        const vitals = await res.json();
+        console.log('Vitals data:', vitals);
+        
+        container.innerHTML = "";
+        
+        if (!vitals || (Array.isArray(vitals) && vitals.length === 0) || Object.keys(vitals).length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h4>No vitals recorded yet</h4>
+              <p>Your vital signs will appear here once recorded by your healthcare provider.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Handle both single object and array responses
+        const vitalsList = Array.isArray(vitals) ? vitals : [vitals];
+        
+        vitalsList.forEach(vital => {
+          const div = document.createElement("div");
+          div.className = "vital-item";
+          
+          // Extract date - try multiple possible field names
+          const date = vital.date || vital.timestamp || vital.created_at || vital.recorded_at || new Date().toISOString();
+          
+          // Extract vital signs - try multiple possible field names
+          const bloodPressure = vital.bp || vital.blood_pressure || vital.systolic_pressure || "Not recorded";
+          const heartRate = vital.heart_rate || vital.pulse || vital.hr || "Not recorded";
+          const temperature = vital.temperature || vital.temp || "Not recorded";
+          const weight = vital.weight || "Not recorded";
+          const height = vital.height || "Not recorded";
+          
+          let vitalContent = `<div class="vital-date">${formatDate(date)}</div>`;
+          
+          if (bloodPressure !== "Not recorded") {
+            vitalContent += `<div class="vital-value"><strong>Blood Pressure:</strong> ${bloodPressure}</div>`;
+          }
+          if (heartRate !== "Not recorded") {
+            vitalContent += `<div class="vital-value"><strong>Heart Rate:</strong> ${heartRate} bpm</div>`;
+          }
+          if (temperature !== "Not recorded") {
+            vitalContent += `<div class="vital-value"><strong>Temperature:</strong> ${temperature}°F</div>`;
+          }
+          if (weight !== "Not recorded") {
+            vitalContent += `<div class="vital-value"><strong>Weight:</strong> ${weight} lbs</div>`;
+          }
+          if (height !== "Not recorded") {
+            vitalContent += `<div class="vital-value"><strong>Height:</strong> ${height} inches</div>`;
+          }
+          
+          // If no specific vitals found, show raw data
+          if (vitalContent === `<div class="vital-date">${formatDate(date)}</div>`) {
+            vitalContent += '<div class="vital-value"><em>Vital signs data available</em></div>';
+          }
+          
+          div.innerHTML = vitalContent;
+          container.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error("Error loading vitals:", error);
+        container.innerHTML = `
+          <div class="error-state">
+            <h4>Error loading vitals</h4>
+            <p>There was a problem loading your vital signs: ${error.message}</p>
+            <button class="button" onclick="loadVitals()" style="margin-top: 1rem;">Retry</button>
+          </div>
+        `;
       }
     }
 
-    function closeVitalsModal() { document.getElementById("vitalsModal").style.display = "none"; }
-
-    function logout() {
-      sessionStorage.clear();
-      window.location.href = "login.html";
+    function formatDate(dateString) {
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return dateString; // Return original if not a valid date
+        }
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (e) {
+        return dateString;
+      }
     }
 
-    loadUser();
+    // Family functionality - Based on your working code
+    async function loadFamily() {
+      const container = document.getElementById("familyList");
+      container.innerHTML = '<div class="loading-state">Loading family members...</div>';
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/family/get_all_family_members`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        console.log('Family members response:', data);
+        
+        container.innerHTML = "";
+        
+        if (!data || data.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h4>No family members yet</h4>
+              <p>Send invitations to your family members to connect them to your healthcare.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        data.forEach(member => {
+          const div = document.createElement("div");
+          div.className = "member-item";
+          
+          const name = member.name || member.email || "Unknown";
+          const relationship = member.relationship_type || "Family Member";
+          
+          div.innerHTML = `
+            <div class="member-info">
+              <div class="member-name">${name}</div>
+              <div class="member-relation">${relationship}</div>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error("Error loading family members:", error);
+        container.innerHTML = `
+          <div class="error-state">
+            <h4>Error loading family members</h4>
+            <p>There was a problem loading your family members: ${error.message}</p>
+            <button class="button" onclick="loadFamily()" style="margin-top: 1rem;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Family invitation form - Based on your working code
+    document.getElementById("inviteForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById("inviteEmail").value.trim();
+      const relationship = document.getElementById("relationship").value.trim();
+      
+      if (!email || !relationship) {
+        alert("Please fill in all fields");
+        return;
+      }
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Sending...";
+      submitBtn.disabled = true;
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/family/send_invitation`, {
+          method: "POST",
+          headers: { 
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({ 
+            email: email, 
+            relationship_type: relationship 
+          })
+        });
+
+        const data = await res.json();
+        
+        if (res.ok) {
+          alert(data.msg || "Invitation sent successfully!");
+          
+          // Clear form
+          document.getElementById("inviteEmail").value = "";
+          document.getElementById("relationship").value = "";
+          
+          // Switch back to view family tab
+          familySubtabs.forEach(t => t.classList.remove('active'));
+          familySubsections.forEach(s => s.classList.remove('active'));
+          familySubtabs[0].classList.add('active');
+          familySubsections[0].classList.add('active');
+          
+          // Refresh family list
+          loadFamily();
+        } else {
+          throw new Error(data.detail || data.message || "Failed to send invitation");
+        }
+        
+      } catch (error) {
+        console.error("Error sending invitation:", error);
+        alert(`Error: ${error.message}`);
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Chat functionality
+    const chatLanding = document.getElementById("chatLanding");
+    const chatRoomsDiv = document.getElementById("chatRooms");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatTitle = document.getElementById("chatTitle");
+    const messagesDiv = document.getElementById("messages");
+    const txt = document.getElementById("txt");
+    const sendBtn = document.getElementById("send");
+    const showRoomsBtn = document.getElementById("showRoomsBtn");
+
+    showRoomsBtn.addEventListener("click", () => {
+      if(chatLanding.style.display === "none"){
+        showChatLanding();
+      } else {
+        if(currentChatId !== null) {
+          showChatMessages();
+        } else {
+          alert("Select a chat room first");
+        }
+      }
+    });
+
+    async function loadChats(){
+  chatRoomsDiv.innerHTML = '<div class="loading-state">Loading chat rooms...</div>';
+  try {
+    const res = await fetch(`${API_BASE_URL}/chats/my`, {
+      headers: { "Authorization": "Bearer "+token }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
+    const chats = await res.json();
+    chatRoomsDiv.innerHTML = "";
+    
+    if(!Array.isArray(chats) || chats.length === 0) {
+      chatRoomsDiv.innerHTML = `
+        <div class="empty-state">
+          <h4>No chat rooms found</h4>
+          <p>Your healthcare provider will create chat rooms for consultations.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    chats.forEach(c => {
+      const div = document.createElement("div");
+      div.className = "card";
+      
+      // Create elements safely instead of using innerHTML with onclick
+      const title = document.createElement("h4");
+      title.textContent = c.name || "Chat Room";
+      
+      const button = document.createElement("button");
+      button.className = "button";
+      button.textContent = "Open";
+      
+      // Add event listener instead of onclick attribute
+      button.addEventListener('click', () => {
+        openChat(c.id, c.name || 'Chat Room');
+      });
+      
+      div.appendChild(title);
+      div.appendChild(button);
+      chatRoomsDiv.appendChild(div);
+    });
+  } catch (error) {
+    console.error('Error loading chats:', error);
+    chatRoomsDiv.innerHTML = `
+      <div class="error-state">
+        <h4>Error loading chat rooms</h4>
+        <p>Please check your connection and try again.</p>
+        <button class="button" onclick="loadChats()" style="margin-top: 1rem;">Retry</button>
+      </div>
+    `;
+  }
+}
+
+    function showChatLanding(){
+      chatLanding.style.display = "block";
+      chatMessages.style.display = "none";
+      showRoomsBtn.textContent = "Show Chat Messages";
+    }
+    
+    function showChatMessages(){
+      chatLanding.style.display = "none";
+      chatMessages.style.display = "flex";
+      showRoomsBtn.textContent = "Show All Chats";
+    }
+
+    window.openChat = async function(id, name){
+      currentChatId = id;
+      chatTitle.textContent = name;
+      showChatMessages();
+      await loadHistory();
+      await connectWS();
+    }
+
+    async function loadHistory(){
+      messagesDiv.innerHTML = '<div class="loading-state">Loading messages...</div>';
+      try {
+        const res = await fetch(`${API_BASE_URL}/chats/${currentChatId}/messages`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const msgs = await res.json();
+        messagesDiv.innerHTML = "";
+        if(msgs.length === 0){
+          messagesDiv.innerHTML = `
+            <div class="empty-state">
+              <h4>Start the conversation</h4>
+              <p>Send a message to begin chatting</p>
+            </div>
+          `;
+        } else {
+          msgs.forEach(showMessage);
+        }
+      } catch (error) {
+        console.error('Error loading history:', error);
+        messagesDiv.innerHTML = '<div class="error-state"><h4>Failed to load messages</h4></div>';
+      }
+    }
+
+    function showMessage(msg){
+      // Remove loading/empty state if present
+      const existingState = messagesDiv.querySelector('.loading-state, .empty-state');
+      if (existingState) {
+        existingState.remove();
+      }
+
+      const bubble = document.createElement('div');
+      const own = Number(msg.sender_id) === Number(sessionStorage.getItem('user_id'));
+      bubble.className = 'message-bubble ' + (own ? 'own' : 'other');
+
+      let ts = "now";
+      try {
+        ts = new Date(msg.timestamp).toLocaleString([], { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: true, 
+          day: 'numeric', 
+          month: 'short'
+        });
+      } catch(e) {}
+
+      bubble.innerHTML = `
+        <div class="message-content">${escapeHtml(msg.content)}</div>
+        <div class="message-meta">${ts}</div>
+      `;
+      messagesDiv.appendChild(bubble);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function escapeHtml(text){
+      return text.replace(/[&<>"']/g, m => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'}[m]));
+    }
+
+    async function connectWS(){
+      if(wsClient){
+        wsClient.close();
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/ws-token`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer '+token }
+        });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { ws_token } = await res.json();
+        wsClient = new WebSocket(`wss://${API_BASE_URL.replace(/^https?:\/\//, '')}/chats/ws/${currentChatId}?ws_token=${ws_token}`);
+
+        sendBtn.disabled = true;
+
+        wsClient.onopen = () => {
+          sendBtn.disabled = false;
+          console.log('WebSocket connected');
+        };
+        wsClient.onmessage = (ev) => {
+          const msg = JSON.parse(ev.data);
+          showMessage(msg);
+        };
+        wsClient.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+        wsClient.onclose = (event) => {
+          console.log(`WebSocket closed: ${event.code} - ${event.reason}`);
+          sendBtn.disabled = true;
+        };
+      } catch (err) {
+        console.error('Error connecting WebSocket:', err);
+        sendBtn.disabled = true;
+      }
+    }
+
+    // Chat input handling
+    txt.addEventListener('input', () => {
+      txt.style.height = 'auto';
+      txt.style.height = Math.min(txt.scrollHeight, 96) + 'px';
+      sendBtn.disabled = !txt.value.trim() || !wsClient || wsClient.readyState !== WebSocket.OPEN;
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    txt.addEventListener('keydown', (e) => { 
+      if(e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function sendMessage(){
+      if(!wsClient || wsClient.readyState !== WebSocket.OPEN) return;
+      const text = txt.value.trim();
+      if(!text) return;
+      
+      try {
+        wsClient.send(JSON.stringify({content: text}));
+        txt.value = '';
+        txt.style.height = 'auto';
+        sendBtn.disabled = true;
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
+
+    function logout(){
+      if (wsClient) {
+        wsClient.close();
+        wsClient = null;
+      }
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      const activeTab = document.querySelector('.tab.active');
+      if (activeTab) {
+        activateTab(activeTab);
+      }
+    });
+
+    // Initialize immediately as well
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab) {
+      activateTab(activeTab);
+    }
   </script>
 </body>
 </html>
