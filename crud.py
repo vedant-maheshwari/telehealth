@@ -1,5 +1,6 @@
+from sqlite3 import IntegrityError
 from sqlalchemy.orm import session
-from sqlalchemy import func
+from sqlalchemy import func, text
 import models, schemas
 from datetime import datetime, time, timedelta
 import hashlib
@@ -68,18 +69,51 @@ def get_all_doctors(db : session):
     return db.query(models.User).filter(models.User.role == 'doctor')
 
 
-def book_appointment(db : session, appointment : schemas.BookAppointment, patient_id : int):
-    create_appointment = models.Appointments(
+# def book_appointment(db : session, appointment : schemas.BookAppointment, patient_id : int):
+#     create_appointment = models.Appointments(
+#         patient_id = patient_id,
+#         doctor_id = appointment.doctor_id,
+#         date_time = appointment.appointment_date,
+#         status = models.Status.PENDING
+#     )
+
+#     db.add(create_appointment)
+#     db.commit()
+#     db.refresh(create_appointment)
+#     return create_appointment
+
+def book_appointment(db: session, appointment: schemas.BookAppointment, patient_id: int):
+    try:
+        db_appointment = models.Appointments(
         patient_id = patient_id,
         doctor_id = appointment.doctor_id,
         date_time = appointment.appointment_date,
         status = models.Status.PENDING
     )
+        db.add(db_appointment)
+        db.commit()
+        db.refresh(db_appointment)
+        return db_appointment
+    except IntegrityError as e:
+        db.rollback()
+        print(f"❌ Database integrity error: {e}")
+        if "duplicate key" in str(e).lower():
+            # Attempt to fix sequence and retry once
+            db.execute(text("SELECT setval('appointments_id_seq', (SELECT MAX(id) FROM appointments))"))
+            db.commit()
+            
+            db_appointment = models.Appointments(
+        patient_id = patient_id,
+        doctor_id = appointment.doctor_id,
+        date_time = appointment.appointment_date,
+        status = models.Status.PENDING
+    )
+            db.add(db_appointment)
+            db.commit()
+            db.refresh(db_appointment)
+            return db_appointment
+        raise e
 
-    db.add(create_appointment)
-    db.commit()
-    db.refresh(create_appointment)
-    return create_appointment
 
 def appointment_response(db : session, response : schemas.AppointmentResponse):
     appointment = db.query(models.Appointments).filter(models.Appointments.id == response.appointment_id).first()

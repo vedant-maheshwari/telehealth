@@ -90,12 +90,14 @@ class FamilyInvitations(Base):
 
 class FamilyPermissions(Base):
     __tablename__ = 'family_permissions'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    family_member_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    permissions: Mapped[List[str]] = mapped_column(JSON, default=list)
+    
+    # Relationship
+    family_member: Mapped["User"] = relationship("User", foreign_keys=[family_member_id])
 
-    id : Mapped[int] = mapped_column(primary_key=True)
-    family_member_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
-    permissions : Mapped[List[str]] = mapped_column(JSON)
-
-    family_member : Mapped["User"] = relationship(back_populates='family_member_permissions')
 
 
 class Appointments(Base):
@@ -127,8 +129,16 @@ class ChatRoom(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    
+    # ADD these missing fields:
+    patient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    doctor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    
+    # ADD relationships:
+    patient: Mapped["User"] = relationship("User", foreign_keys=[patient_id])
+    doctor: Mapped["User"] = relationship("User", foreign_keys=[doctor_id])
 
-    # relationships
+    # Existing relationships
     participants: Mapped[List["ChatParticipant"]] = relationship("ChatParticipant", back_populates="chat_room", cascade="all, delete-orphan")
     messages: Mapped[List["ChatMessage"]] = relationship("ChatMessage", back_populates="chat_room", cascade="all, delete-orphan")
 
@@ -140,6 +150,9 @@ class ChatParticipant(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="participants")
+    __table_args__ = (
+        UniqueConstraint('chat_id', 'user_id', name='unique_chat_participant'),
+    )
     # no backref to user required here; you can query users via models.User
 
 

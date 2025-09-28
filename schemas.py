@@ -27,10 +27,10 @@ class UsersOut(BaseModel):
     name: str
     email: EmailStr
     role: str
-    date_of_birth: Optional[date]
-    medical_license: Optional[str] = None  # only for doctors
-
-    class config:
+    date_of_birth: Optional[datetime]  # Changed from date to datetime
+    medical_license: Optional[str] = None
+    
+    class Config:
         from_attributes = True
 
 
@@ -124,3 +124,52 @@ class DoctorAvailability(BaseModel):
 
 class SetAvailabilityRequest(BaseModel):
     availabilities: List[DoctorAvailability]
+
+
+class AppointmentDetailOut(BaseModel):
+    id: int
+    doctor_id: int
+    doctor_name: str
+    doctor_email: str
+    appointment_date: str
+    appointment_time: str
+    appointment_day: str
+    status: str
+    status_display: str
+    can_cancel: bool
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+class AppointmentCancelResponse(BaseModel):
+    message: str
+    appointment_id: int
+    status: str
+
+class FamilyPermissionUpdate(BaseModel):
+    can_view_records: Optional[bool] = None
+    can_book_appointments: Optional[bool] = None
+    can_message_doctor: Optional[bool] = None
+    can_view_vitals: Optional[bool] = None
+    can_manage_family: Optional[bool] = None
+
+class FamilyMemberPermissions(BaseModel):
+    family_member_id: int
+    name: str
+    email: EmailStr
+    relationship_type: str
+    permissions: dict
+    
+    class Config:
+        from_attributes = True
+
+class MyFamilyPermissions(BaseModel):
+    patient_id: int
+    patient_name: str
+    patient_email: EmailStr
+    relationship_type: str
+    permissions: dict
+    
+    class Config:
+        from_attributes = True

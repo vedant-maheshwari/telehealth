@@ -3,87 +3,1034 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patient Dashboard</title>
+  <title>Family Member Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f5f8fc;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
     }
     header {
       background: #1976d2;
       color: #fff;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .container {
       padding: 20px;
-      max-width: 800px;
+      max-width: 1200px;
       margin: auto;
     }
     .card {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
+      padding: 25px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #1976d2;
     }
-    button {
-      padding: 10px 15px;
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #1976d2;
+      font-size: 1.4rem;
+    }
+    .patients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+    }
+    .patient-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #4caf50;
+    }
+    .patient-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .patient-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+    .relationship-tag {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .permissions-section {
+      margin: 15px 0;
+    }
+    .permission-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .permission-item:last-child {
+      border-bottom: none;
+    }
+    .permission-status {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .permission-granted {
+      background: #e8f5e8;
+      color: #2e7d32;
+    }
+    .permission-denied {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    .btn {
+      padding: 10px 16px;
       border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
       background: #1976d2;
       color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
     }
-    button:hover {
-      background: #125aa1;
+    .btn-primary:hover:not(:disabled) {
+      background: #1565c0;
+    }
+    .btn-secondary {
+      background: #424242;
+      color: white;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: #303030;
+    }
+    .btn-success {
+      background: #388e3c;
+      color: white;
+    }
+    .btn-success:hover:not(:disabled) {
+      background: #2e7d32;
+    }
+    .btn-warning {
+      background: #f57c00;
+      color: white;
+    }
+    .btn-warning:hover:not(:disabled) {
+      background: #ef6c00;
+    }
+    .btn-info {
+      background: #0288d1;
+      color: white;
+    }
+    .btn-info:hover:not(:disabled) {
+      background: #0277bd;
+    }
+    .loading-state, .empty-state, .error-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+    .error-state {
+      color: #d32f2f;
+    }
+    .empty-state h4, .error-state h4 {
+      margin-bottom: 10px;
+      color: inherit;
+    }
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .close {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666;
+    }
+    .close:hover {
+      color: #000;
+    }
+    
+    /* Appointment and vitals styles */
+    .appointment-item, .vital-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #2196f3;
+    }
+    .appointment-date, .vital-date {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .appointment-doctor, .vital-value {
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .appointment-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .status-accepted {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status-rejected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Chat styles */
+    .chat-rooms-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .chat-room-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #ff9800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-room-info h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+    .chat-room-info p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    /* Chat modal specific styles */
+    .chat-modal-content {
+      width: 90%;
+      max-width: 800px;
+      height: 600px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message-bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      word-wrap: break-word;
+      position: relative;
+      line-height: 1.4;
+    }
+    .message-bubble.own {
+      align-self: flex-end;
+      background: #1976d2;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .message-bubble.other {
+      align-self: flex-start;
+      background: white;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      border-bottom-left-radius: 4px;
+    }
+    .message-meta {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+    .chat-input-container {
+      padding: 15px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .chat-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      max-height: 100px;
+    }
+    .chat-send-btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .chat-send-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .patients-grid {
+        grid-template-columns: 1fr;
+      }
+      .action-buttons {
+        flex-direction: column;
+      }
+      .btn {
+        justify-content: center;
+      }
+      .modal-content, .chat-modal-content {
+        margin: 10% auto;
+        width: 95%;
+        height: auto;
+        max-height: 85vh;
+      }
+      .chat-container {
+        height: 400px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <h2>Patient Dashboard</h2>
+    <h2>Family Member Dashboard</h2>
+    <p>Welcome, <span id="userName"></span></p>
   </header>
+
   <div class="container">
+    <!-- User Info Card -->
     <div class="card">
-      <h3>Welcome, <span id="userName"></span></h3>
-      <p>Email: <span id="userEmail"></span></p>
+      <h3>👤 Account Information</h3>
+      <p><strong>Name:</strong> <span id="userNameDetail"></span></p>
+      <p><strong>Email:</strong> <span id="userEmail"></span></p>
+      <div style="margin-top: 15px;">
+        <button class="btn btn-secondary" onclick="logout()">Logout</button>
+        <button class="btn btn-primary" onclick="window.location.href='invitation_response.html'">Family Requests</button>
+      </div>
     </div>
 
+    <!-- Patients Access Section -->
     <div class="card">
-      <h3>Manage</h3>
-      <button onclick="window.location.href='invitation_response.html'">Family Request Response</button>
-      <!-- <button onclick="window.location.href='create_appointment.html'">Create Appointment</button> -->
-      <button onclick="logout()">Logout</button>
+      <h3>👨‍👩‍👧‍👦 Your Family Members</h3>
+      <div id="patientsContainer" class="loading-state">Loading your family members...</div>
+    </div>
+
+    <!-- Chat Rooms Section -->
+    <div class="card">
+      <h3>💬 Chat Rooms</h3>
+      <div id="chatRoomsContainer" class="loading-state">Loading chat rooms...</div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  
+  <!-- Appointments Modal -->
+  <div id="appointmentsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="appointmentsModalTitle">Appointments</h3>
+        <span class="close" onclick="closeModal('appointmentsModal')">&times;</span>
+      </div>
+      <div id="appointmentsContent">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Medical Records Modal -->
+  <div id="vitalsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="vitalsModalTitle">Medical Records</h3>
+        <span class="close" onclick="closeModal('vitalsModal')">&times;</span>
+      </div>
+      <div id="vitalsContent">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Chat Modal -->
+  <div id="chatModal" class="modal">
+    <div class="modal-content chat-modal-content">
+      <div class="modal-header">
+        <h3 id="chatModalTitle">Chat Room</h3>
+        <span class="close" onclick="closeChatModal()">&times;</span>
+      </div>
+      <div class="chat-container">
+        <div id="chatMessages" class="chat-messages">
+          <div class="loading-state">Loading messages...</div>
+        </div>
+        <div class="chat-input-container">
+          <textarea id="chatInput" class="chat-input" placeholder="Type your message..." rows="1"></textarea>
+          <button id="chatSendBtn" class="chat-send-btn" disabled>Send</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
-    // Fetch current user info
-    async function loadUser() {
-      const token = sessionStorage.getItem("token");
-      if (!token) {
-        window.location.href = "login.html";
-        return;
+    // Environment-aware API URL
+    const getApiBaseUrl = () => {
+      if (window.location.hostname.includes('azurewebsites.net')) {
+        return window.location.origin;
       }
-      const res = await fetch(`${API_BASE_URL}/user/me`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      const user = await res.json();
-      document.getElementById("userName").textContent = user.name;
-      document.getElementById("userEmail").textContent = user.email;
-    }
+      return "http://localhost:8000";
+    };
 
-    function logout() {
-      localStorage.removeItem("access_token");
+    const API_BASE_URL = getApiBaseUrl();
+    console.log('Using API Base URL:', API_BASE_URL);
+
+    const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+    
+    if (!token) {
       window.location.href = "login.html";
     }
 
+    // Store user ID for WebSocket
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        sessionStorage.setItem('user_id', payload.id);
+      } catch (e) {
+        console.error('Error parsing token:', e);
+      }
+    }
+
+    let currentPatientId = null;
+    let patientsData = [];
+    let wsClient = null;
+    let currentChatId = null;
+
+    // Load current user info
+    async function loadUser() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/me`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            logout();
+            return;
+          }
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const user = await res.json();
+        document.getElementById("userName").textContent = user.name;
+        document.getElementById("userNameDetail").textContent = user.name;
+        document.getElementById("userEmail").textContent = user.email;
+      } catch (error) {
+        console.error('Error loading user:', error);
+        alert('Error loading user information. Please try logging in again.');
+        logout();
+      }
+    }
+
+    // Load patients that this family member has access to
+    async function loadPatients() {
+      const container = document.getElementById("patientsContainer");
+      container.innerHTML = '<div class="loading-state">Loading your family members...</div>';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/family/my-patients`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const patients = await res.json();
+        patientsData = patients;
+        
+        container.innerHTML = "";
+
+        if (!patients || patients.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h4>No Family Members Found</h4>
+              <p>You don't have access to any family members yet. Ask your family members to add you and grant permissions.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const gridDiv = document.createElement("div");
+        gridDiv.className = "patients-grid";
+
+        patients.forEach(patient => {
+          const patientCard = document.createElement("div");
+          patientCard.className = "patient-card";
+          
+          const permissions = patient.permissions;
+          
+          patientCard.innerHTML = `
+            <div class="patient-header">
+              <div class="patient-name">${patient.patient_name}</div>
+              <div class="relationship-tag">${patient.relationship_type}</div>
+            </div>
+            
+            <div class="permissions-section">
+              <h4 style="margin-bottom: 10px; color: #666; font-size: 0.9rem;">Your Permissions:</h4>
+              <div class="permission-item">
+                <span>View Medical Records</span>
+                <span class="permission-status ${permissions.can_view_records ? 'permission-granted' : 'permission-denied'}">
+                  ${permissions.can_view_records ? 'Granted' : 'Denied'}
+                </span>
+              </div>
+              <div class="permission-item">
+                <span>Book Appointments</span>
+                <span class="permission-status ${permissions.can_book_appointments ? 'permission-granted' : 'permission-denied'}">
+                  ${permissions.can_book_appointments ? 'Granted' : 'Denied'}
+                </span>
+              </div>
+              <div class="permission-item">
+                <span>Message Doctor</span>
+                <span class="permission-status ${permissions.can_message_doctor ? 'permission-granted' : 'permission-denied'}">
+                  ${permissions.can_message_doctor ? 'Granted' : 'Denied'}
+                </span>
+              </div>
+            </div>
+            
+            <div class="action-buttons">
+              <button class="btn btn-primary" onclick="viewAppointments(${patient.patient_id}, '${patient.patient_name}')" 
+                      ${!permissions.can_view_records ? 'disabled title="No permission to view appointments"' : ''}>
+                📅 View Appointments
+              </button>
+              <button class="btn btn-success" onclick="viewVitals(${patient.patient_id}, '${patient.patient_name}')" 
+                      ${!permissions.can_view_records ? 'disabled title="No permission to view medical records"' : ''}>
+                📁 View Medical Records
+              </button>
+              <button class="btn btn-info" onclick="bookAppointmentForPatient(${patient.patient_id}, '${patient.patient_name}')" 
+                      ${!permissions.can_book_appointments ? 'disabled title="No permission to book appointments"' : ''}>
+                📝 Book Appointment
+              </button>
+            </div>
+          `;
+          
+          gridDiv.appendChild(patientCard);
+        });
+
+        container.appendChild(gridDiv);
+        
+      } catch (error) {
+        console.error("Error loading patients:", error);
+        container.innerHTML = `
+          <div class="error-state">
+            <h4>Error Loading Family Members</h4>
+            <p>There was a problem loading your family members: ${error.message}</p>
+            <button class="btn btn-primary" onclick="loadPatients()" style="margin-top: 15px;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Load chat rooms
+    async function loadChatRooms() {
+      const container = document.getElementById("chatRoomsContainer");
+      container.innerHTML = '<div class="loading-state">Loading chat rooms...</div>';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/chats/my`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const chatRooms = await res.json();
+        container.innerHTML = "";
+
+        if (!chatRooms || chatRooms.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h4>No Chat Rooms Found</h4>
+              <p>Your healthcare provider will create chat rooms for consultations.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const chatGrid = document.createElement("div");
+        chatGrid.className = "chat-rooms-container";
+
+        chatRooms.forEach(room => {
+          const roomCard = document.createElement("div");
+          roomCard.className = "chat-room-card";
+          
+          roomCard.innerHTML = `
+            <div class="chat-room-info">
+              <h4>${room.name || 'Chat Room'}</h4>
+              <p>Healthcare Consultation</p>
+            </div>
+            <button class="btn btn-warning" onclick="openChatRoom(${room.id}, '${room.name || 'Chat Room'}')">
+              💬 Open Chat
+            </button>
+          `;
+          
+          chatGrid.appendChild(roomCard);
+        });
+
+        container.appendChild(chatGrid);
+
+      } catch (error) {
+        console.error("Error loading chat rooms:", error);
+        container.innerHTML = `
+          <div class="error-state">
+            <h4>Error Loading Chat Rooms</h4>
+            <p>There was a problem loading your chat rooms: ${error.message}</p>
+            <button class="btn btn-primary" onclick="loadChatRooms()" style="margin-top: 15px;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // View appointments for a patient
+    async function viewAppointments(patientId, patientName) {
+      currentPatientId = patientId;
+      const modal = document.getElementById('appointmentsModal');
+      const title = document.getElementById('appointmentsModalTitle');
+      const content = document.getElementById('appointmentsContent');
+      
+      title.textContent = `${patientName}'s Appointments`;
+      content.innerHTML = '<div class="loading-state">Loading appointments...</div>';
+      
+      modal.style.display = 'block';
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/family/patient-appointments/${patientId}`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const appointments = await res.json();
+        content.innerHTML = "";
+        
+        if (!appointments || appointments.length === 0) {
+          content.innerHTML = '<div class="empty-state"><h4>No Appointments Found</h4><p>No appointments scheduled for this patient.</p></div>';
+          return;
+        }
+        
+        appointments.forEach(appointment => {
+          const div = document.createElement("div");
+          div.className = "appointment-item";
+          div.innerHTML = `
+            <div class="appointment-date">${appointment.appointment_day}</div>
+            <div class="appointment-doctor"><strong>Dr. ${appointment.doctor_name}</strong></div>
+            <div class="appointment-doctor">${appointment.appointment_time}</div>
+            <span class="appointment-status status-${appointment.status}">${appointment.status_display}</span>
+          `;
+          content.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+        content.innerHTML = `<div class="error-state"><h4>Error Loading Appointments</h4><p>${error.message}</p></div>`;
+      }
+    }
+
+    // View medical records (vitals) for a patient
+    async function viewVitals(patientId, patientName) {
+      const modal = document.getElementById('vitalsModal');
+      const title = document.getElementById('vitalsModalTitle');
+      const content = document.getElementById('vitalsContent');
+      
+      title.textContent = `${patientName}'s Medical Records`;
+      content.innerHTML = '<div class="loading-state">Loading medical records...</div>';
+      
+      modal.style.display = 'block';
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/family/patient-vitals/${patientId}`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const vitals = await res.json();
+        content.innerHTML = "";
+        
+        if (!vitals || vitals.length === 0) {
+          content.innerHTML = '<div class="empty-state"><h4>No Medical Records Found</h4><p>No medical records have been recorded for this patient yet.</p></div>';
+          return;
+        }
+        
+        const vitalsList = Array.isArray(vitals) ? vitals : [vitals];
+        
+        vitalsList.forEach(vital => {
+          const div = document.createElement("div");
+          div.className = "vital-item";
+          
+          const date = vital.date || vital.timestamp || new Date().toISOString();
+          const bloodPressure = vital.bp || vital.blood_pressure || "Not recorded";
+          const heartRate = vital.heart_rate || vital.pulse || "Not recorded";
+          const temperature = vital.temperature || "Not recorded";
+          
+          div.innerHTML = `
+            <div class="vital-date">${formatDate(date)}</div>
+            ${bloodPressure !== "Not recorded" ? `<div class="vital-value"><strong>Blood Pressure:</strong> ${bloodPressure}</div>` : ''}
+            ${heartRate !== "Not recorded" ? `<div class="vital-value"><strong>Heart Rate:</strong> ${heartRate} bpm</div>` : ''}
+            ${temperature !== "Not recorded" ? `<div class="vital-value"><strong>Temperature:</strong> ${temperature}°F</div>` : ''}
+          `;
+          content.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error("Error loading medical records:", error);
+        content.innerHTML = `<div class="error-state"><h4>Error Loading Medical Records</h4><p>${error.message}</p></div>`;
+      }
+    }
+
+    // Book appointment for patient (redirect to create_appointment.html)
+    function bookAppointmentForPatient(patientId, patientName) {
+      // Store the patient info for the appointment booking page
+      sessionStorage.setItem('bookingForPatient', JSON.stringify({
+        patientId: patientId,
+        patientName: patientName,
+        bookedByFamily: true
+      }));
+      
+      // Redirect to the appointment booking page
+      window.location.href = 'create_appointment.html';
+    }
+
+    // Open chat room
+    async function openChatRoom(chatId, chatName) {
+      currentChatId = chatId;
+      const modal = document.getElementById('chatModal');
+      const title = document.getElementById('chatModalTitle');
+      const messagesContainer = document.getElementById('chatMessages');
+      
+      title.textContent = chatName;
+      messagesContainer.innerHTML = '<div class="loading-state">Loading messages...</div>';
+      
+      modal.style.display = 'block';
+      
+      await loadChatHistory();
+      await connectWebSocket();
+    }
+
+    // Load chat history
+    async function loadChatHistory() {
+      const messagesContainer = document.getElementById('chatMessages');
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/chats/${currentChatId}/messages`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const messages = await res.json();
+        messagesContainer.innerHTML = "";
+        
+        if (!messages || messages.length === 0) {
+          messagesContainer.innerHTML = '<div class="empty-state"><h4>Start the conversation</h4><p>Send a message to begin chatting</p></div>';
+          return;
+        }
+        
+        messages.forEach(showMessage);
+        
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+        messagesContainer.innerHTML = '<div class="error-state"><h4>Failed to load messages</h4></div>';
+      }
+    }
+
+    // Connect WebSocket for real-time chat
+    async function connectWebSocket() {
+      if (wsClient) {
+        wsClient.close();
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/ws-token`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        
+        const { ws_token } = await res.json();
+        
+        // FIXED WebSocket URL logic
+        let wsUrl;
+        if (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1')) {
+          wsUrl = `ws://localhost:8000/chats/ws/${currentChatId}?ws_token=${ws_token}`;
+        } else {
+          wsUrl = `wss://${API_BASE_URL.replace(/^https?:\/\//, '')}/chats/ws/${currentChatId}?ws_token=${ws_token}`;
+        }
+        
+        console.log('🔗 Connecting to WebSocket:', wsUrl);
+        wsClient = new WebSocket(wsUrl);
+        
+        const sendBtn = document.getElementById('chatSendBtn');
+        sendBtn.disabled = true;
+        
+        wsClient.onopen = () => {
+          sendBtn.disabled = false;
+          console.log('✅ WebSocket connected successfully');
+        };
+        
+        wsClient.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          console.log('📨 Received message:', message);
+          showMessage(message);
+        };
+        
+        wsClient.onerror = (error) => {
+          console.error('❌ WebSocket error:', error);
+          sendBtn.disabled = true;
+        };
+        
+        wsClient.onclose = (event) => {
+          console.log(`🔌 WebSocket closed: ${event.code} - ${event.reason}`);
+          sendBtn.disabled = true;
+        };
+        
+      } catch (error) {
+        console.error('❌ Error connecting WebSocket:', error);
+        document.getElementById('chatSendBtn').disabled = true;
+      }
+    }
+
+    // Show message in chat
+    function showMessage(message) {
+      const messagesContainer = document.getElementById('chatMessages');
+      
+      // Remove loading/empty state if present
+      const existingState = messagesContainer.querySelector('.loading-state, .empty-state');
+      if (existingState) {
+        existingState.remove();
+      }
+      
+      const messageBubble = document.createElement('div');
+      const isOwnMessage = Number(message.sender_id) === Number(sessionStorage.getItem('user_id'));
+      messageBubble.className = 'message-bubble ' + (isOwnMessage ? 'own' : 'other');
+      
+      let timestamp = "now";
+      try {
+        timestamp = new Date(message.timestamp).toLocaleString([], { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: true, 
+          day: 'numeric', 
+          month: 'short'
+        });
+      } catch(e) {}
+      
+      messageBubble.innerHTML = `
+        <div class="message-content">${escapeHtml(message.content)}</div>
+        <div class="message-meta">${timestamp}</div>
+      `;
+      
+      messagesContainer.appendChild(messageBubble);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Chat input handling
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 100) + 'px';
+      chatSendBtn.disabled = !chatInput.value.trim() || !wsClient || wsClient.readyState !== WebSocket.OPEN;
+    });
+
+    chatSendBtn.addEventListener('click', sendChatMessage);
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+
+    function sendChatMessage() {
+      if (!wsClient || wsClient.readyState !== WebSocket.OPEN) {
+        console.log('⚠️ WebSocket not ready. State:', wsClient?.readyState);
+        return;
+      }
+      
+      const text = chatInput.value.trim();
+      if (!text) return;
+      
+      try {
+        console.log('📤 Sending message:', text);
+        wsClient.send(JSON.stringify({ content: text }));
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+        chatSendBtn.disabled = true;
+        console.log('✅ Message sent successfully');
+      } catch (error) {
+        console.error('❌ Error sending message:', error);
+      }
+    }
+
+    // Close chat modal
+    function closeChatModal() {
+      document.getElementById('chatModal').style.display = 'none';
+      if (wsClient) {
+        wsClient.close();
+        wsClient = null;
+      }
+      currentChatId = null;
+    }
+
+    // Modal functions
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        if (event.target.id === 'chatModal') {
+          closeChatModal();
+        } else {
+          event.target.style.display = 'none';
+        }
+      }
+    }
+
+    // Utility functions
+    function formatDate(dateString) {
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return dateString;
+        }
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (e) {
+        return dateString;
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, m => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'}[m]));
+    }
+
+    function logout() {
+      if (wsClient) {
+        wsClient.close();
+        wsClient = null;
+      }
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUser();
+      loadPatients();
+      loadChatRooms();
+    });
+
+    // Initialize immediately as well
     loadUser();
+    loadPatients();
+    loadChatRooms();
   </script>
 </body>
 </html>

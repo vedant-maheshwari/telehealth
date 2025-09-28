@@ -96,7 +96,7 @@
     .button {
       display: inline-block;
       padding: 0.6rem 1.25rem;
-      margin-top: 1rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
       border-radius: 8px;
       font-weight: 600;
       font-size: 1rem;
@@ -110,15 +110,35 @@
     .button:hover {
       background: #1e40af;
     }
+    .button.secondary {
+      background: #6b7280;
+    }
+    .button.secondary:hover {
+      background: #4b5563;
+    }
+    .button.danger {
+      background: #dc2626;
+    }
+    .button.danger:hover {
+      background: #b91c1c;
+    }
+    .button.success {
+      background: #059669;
+    }
+    .button.success:hover {
+      background: #047857;
+    }
     
     /* Family sub-tabs */
     .subtabs {
       display: flex;
       gap: 1rem;
       margin-bottom: 1.5rem;
+      flex-wrap: wrap;
     }
     .subtab {
       flex: 1;
+      min-width: 140px;
       padding: 0.75rem;
       cursor: pointer;
       border-bottom: 2px solid transparent;
@@ -170,6 +190,62 @@
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
     
+    /* Appointments styles */
+    .appointment-item {
+      background: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-left: 4px solid #6366f1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .appointment-info {
+      flex: 1;
+      min-width: 250px;
+    }
+    .appointment-date {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .appointment-doctor {
+      color: #4b5563;
+      margin-bottom: 0.25rem;
+    }
+    .appointment-time {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+    .appointment-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .appointment-status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .appointment-status.accepted {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .appointment-status.rejected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .appointment-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
     /* Vitals styles */
     .vital-item {
       background: #f8fafc;
@@ -199,9 +275,12 @@
       justify-content: space-between;
       align-items: center;
       border: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
     .member-info {
       flex: 1;
+      min-width: 200px;
     }
     .member-name {
       font-weight: 600;
@@ -212,6 +291,61 @@
     .member-relation {
       color: #4b5563;
       font-size: 0.9rem;
+    }
+    .member-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    /* Permission toggle styles */
+    .permission-item {
+      background: #f9fafb;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .permission-toggle {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+    .permission-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .permission-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+    .permission-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    input:checked + .permission-slider {
+      background-color: #2563eb;
+    }
+    input:checked + .permission-slider:before {
+      transform: translateX(24px);
     }
     
     /* Chat styles within chats tab */
@@ -343,7 +477,7 @@
     }
     
     /* Responsive */
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       .container {
         margin: 1rem;
         padding: 1.25rem;
@@ -355,6 +489,14 @@
       .subtab {
         flex: none;
       }
+      .appointment-item, .member-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .appointment-actions, .member-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
@@ -363,9 +505,9 @@
   <div class="container">
     <div class="tabs" role="tablist" aria-label="Patient dashboard navigation">
       <div class="tab active" role="tab" aria-selected="true" tabindex="0" data-target="profile">Profile</div>
+      <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="appointments">Appointments</div>
       <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="chats">Chats</div>
       <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="vitals">Vitals</div>
-      <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="appointments">Appointments</div>
       <div class="tab" role="tab" aria-selected="false" tabindex="-1" data-target="family">Family</div>
     </div>
 
@@ -377,6 +519,14 @@
    
       <div class="card">
         <button class="button" onclick="logout()">Logout</button>
+      </div>
+    </section>
+
+    <section id="appointments" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
+      <div class="card">
+        <h3>My Appointments</h3>
+        <a href="create_appointment.html" class="button" role="button">Book New Appointment</a>
+        <div id="appointmentsContainer" class="loading-state">Loading appointments...</div>
       </div>
     </section>
 
@@ -407,14 +557,6 @@
       </div>
     </section>
 
-    <section id="appointments" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
-      <div class="card">
-        <h3>Manage Appointments</h3>
-        <a href="create_appointment.html" class="button" role="button">Create Appointment</a>
-        <a href="appointments.html" class="button" role="button">View Appointments</a>
-      </div>
-    </section>
-
     <section id="family" class="section" role="tabpanel" tabindex="-1" aria-hidden="true">
       <div class="card">
         <h3>Family Management</h3>
@@ -423,6 +565,7 @@
         <div class="subtabs">
           <button class="subtab active" data-subtarget="viewFamily" type="button">Your Family Members</button>
           <button class="subtab" data-subtarget="sendInvitation" type="button">Send Invitation</button>
+          <button class="subtab" data-subtarget="managePermissions" type="button">Manage Permissions</button>
         </div>
         
         <!-- View Family Members Sub-section -->
@@ -444,17 +587,32 @@
             <button type="submit" class="button">Send Invitation</button>
           </form>
         </div>
+
+        <!-- Manage Permissions Sub-section -->
+        <div id="managePermissions" class="subsection">
+          <div id="permissionsContainer" class="loading-state">Loading permissions...</div>
+        </div>
       </div>
     </section>
   </div>
 
   <script>
     // Constants
-    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net";
+    const API_BASE_URL = "http://127.0.0.1:8000";
     const token = sessionStorage.getItem("token") || localStorage.getItem("token");
     
     if(!token) { 
       location.href = "login.html"; 
+    }
+
+    // Store user ID for WebSocket
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        sessionStorage.setItem('user_id', payload.id);
+      } catch (e) {
+        console.error('Error parsing token:', e);
+      }
     }
 
     // Global variables
@@ -502,7 +660,9 @@
       panel.tabIndex = 0;
 
       // Load content based on tab
-      if(target === 'chats'){
+      if(target === 'appointments'){
+        loadAppointments();
+      } else if(target === 'chats'){
         showChatLanding();
         loadChats();
       } else if(target === 'vitals'){
@@ -528,6 +688,11 @@
         tab.classList.add('active');
         const targetId = tab.dataset.subtarget;
         document.getElementById(targetId).classList.add('active');
+        
+        // Load content for permissions tab
+        if (targetId === 'managePermissions') {
+          loadFamilyPermissions();
+        }
       });
     });
 
@@ -550,6 +715,116 @@
       }
     }
 
+    // Appointments functionality - NEW AND IMPROVED
+    async function loadAppointments() {
+      const container = document.getElementById("appointmentsContainer");
+      container.innerHTML = '<div class="loading-state">Loading appointments...</div>';
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/patient/appointments/detailed`, {
+          headers: { 
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          }
+        });
+        
+        console.log('Appointments API response status:', res.status);
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <h4>No appointments scheduled</h4>
+                <p>Book your first appointment with a healthcare provider.</p>
+                <a href="create_appointment.html" class="button" style="margin-top: 1rem;">Book Appointment</a>
+              </div>
+            `;
+            return;
+          }
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const appointments = await res.json();
+        console.log('Appointments data:', appointments);
+        
+        container.innerHTML = "";
+        
+        if (!appointments || appointments.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h4>No appointments scheduled</h4>
+              <p>Book your first appointment with a healthcare provider.</p>
+              <a href="create_appointment.html" class="button" style="margin-top: 1rem;">Book Appointment</a>
+            </div>
+          `;
+          return;
+        }
+        
+        appointments.forEach(appointment => {
+          const div = document.createElement("div");
+          div.className = "appointment-item";
+          
+          const statusClass = appointment.status.toLowerCase();
+          
+          div.innerHTML = `
+            <div class="appointment-info">
+              <div class="appointment-date">${appointment.appointment_day}</div>
+              <div class="appointment-doctor"><strong>Dr. ${appointment.doctor_name}</strong></div>
+              <div class="appointment-time">${appointment.appointment_time}</div>
+            </div>
+            <div class="appointment-actions">
+              <div class="appointment-status ${statusClass}">${appointment.status_display}</div>
+              ${appointment.can_cancel ? 
+                `<button class="button danger" onclick="cancelAppointment(${appointment.id})" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">Cancel</button>` : 
+                ''
+              }
+            </div>
+          `;
+          
+          container.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+        container.innerHTML = `
+          <div class="error-state">
+            <h4>Error loading appointments</h4>
+            <p>There was a problem loading your appointments: ${error.message}</p>
+            <button class="button" onclick="loadAppointments()" style="margin-top: 1rem;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Cancel appointment function
+    async function cancelAppointment(appointmentId) {
+      if (!confirm('Are you sure you want to cancel this appointment?')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/patient/appointments/${appointmentId}/cancel`, {
+          method: 'PUT',
+          headers: { 
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const result = await res.json();
+        alert('Appointment cancelled successfully');
+        loadAppointments(); // Refresh the list
+        
+      } catch (error) {
+        console.error("Error cancelling appointment:", error);
+        alert(`Error cancelling appointment: ${error.message}`);
+      }
+    }
+
     // Vitals functionality - Fixed and improved
     async function loadVitals() {
       const container = document.getElementById("vitalsContainer");
@@ -567,7 +842,6 @@
         
         if (!res.ok) {
           if (res.status === 404) {
-            // No vitals found
             container.innerHTML = `
               <div class="empty-state">
                 <h4>No vitals recorded yet</h4>
@@ -594,17 +868,13 @@
           return;
         }
         
-        // Handle both single object and array responses
         const vitalsList = Array.isArray(vitals) ? vitals : [vitals];
         
         vitalsList.forEach(vital => {
           const div = document.createElement("div");
           div.className = "vital-item";
           
-          // Extract date - try multiple possible field names
           const date = vital.date || vital.timestamp || vital.created_at || vital.recorded_at || new Date().toISOString();
-          
-          // Extract vital signs - try multiple possible field names
           const bloodPressure = vital.bp || vital.blood_pressure || vital.systolic_pressure || "Not recorded";
           const heartRate = vital.heart_rate || vital.pulse || vital.hr || "Not recorded";
           const temperature = vital.temperature || vital.temp || "Not recorded";
@@ -629,7 +899,6 @@
             vitalContent += `<div class="vital-value"><strong>Height:</strong> ${height} inches</div>`;
           }
           
-          // If no specific vitals found, show raw data
           if (vitalContent === `<div class="vital-date">${formatDate(date)}</div>`) {
             vitalContent += '<div class="vital-value"><em>Vital signs data available</em></div>';
           }
@@ -654,7 +923,7 @@
       try {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) {
-          return dateString; // Return original if not a valid date
+          return dateString;
         }
         return date.toLocaleDateString('en-US', {
           year: 'numeric',
@@ -709,6 +978,9 @@
               <div class="member-name">${name}</div>
               <div class="member-relation">${relationship}</div>
             </div>
+            <div class="member-actions">
+              <button class="button secondary" onclick="manageMemberPermissions(${member.id}, '${name}')" style="font-size: 0.9rem;">Manage Permissions</button>
+            </div>
           `;
           container.appendChild(div);
         });
@@ -722,6 +994,131 @@
             <button class="button" onclick="loadFamily()" style="margin-top: 1rem;">Retry</button>
           </div>
         `;
+      }
+    }
+
+    // Family permission management - NEW FUNCTIONALITY
+    async function loadFamilyPermissions() {
+      const container = document.getElementById("permissionsContainer");
+      container.innerHTML = '<div class="loading-state">Loading permissions...</div>';
+      
+      try {
+        // Get current user ID from token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentUserId = payload.id;
+        
+        const res = await fetch(`${API_BASE_URL}/family/permissions/${currentUserId}`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const familyMembers = await res.json();
+        console.log('Family permissions data:', familyMembers);
+        
+        container.innerHTML = "";
+        
+        if (!familyMembers || familyMembers.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h4>No family members to manage</h4>
+              <p>Add family members first to manage their permissions.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        familyMembers.forEach(member => {
+          const div = document.createElement("div");
+          div.className = "member-item";
+          div.style.flexDirection = "column";
+          div.style.alignItems = "flex-start";
+          div.style.gap = "1rem";
+          
+          const permissions = member.permissions;
+          
+          div.innerHTML = `
+            <div class="member-info" style="width: 100%;">
+              <div class="member-name">${member.name}</div>
+              <div class="member-relation">${member.relationship_type}</div>
+            </div>
+            
+            <div style="width: 100%;">
+              <h4 style="margin-bottom: 0.5rem; color: #1e293b;">Permissions:</h4>
+              
+              <div class="permission-item">
+                <span>View Medical Records</span>
+                <label class="permission-toggle">
+                  <input type="checkbox" ${permissions.can_view_records ? 'checked' : ''} 
+                         onchange="updatePermission(${member.family_member_id}, 'can_view_records', this.checked)">
+                  <span class="permission-slider"></span>
+                </label>
+              </div>
+              
+              <div class="permission-item">
+                <span>Book Appointments</span>
+                <label class="permission-toggle">
+                  <input type="checkbox" ${permissions.can_book_appointments ? 'checked' : ''} 
+                         onchange="updatePermission(${member.family_member_id}, 'can_book_appointments', this.checked)">
+                  <span class="permission-slider"></span>
+                </label>
+              </div>
+              
+              <div class="permission-item">
+                <span>Message Doctor</span>
+                <label class="permission-toggle">
+                  <input type="checkbox" ${permissions.can_message_doctor ? 'checked' : ''} 
+                         onchange="updatePermission(${member.family_member_id}, 'can_message_doctor', this.checked)">
+                  <span class="permission-slider"></span>
+                </label>
+              </div>
+              
+          `;
+          
+          container.appendChild(div);
+        });
+        
+      } catch (error) {
+        console.error("Error loading family permissions:", error);
+        container.innerHTML = `
+          <div class="error-state">
+            <h4>Error loading permissions</h4>
+            <p>There was a problem loading family permissions: ${error.message}</p>
+            <button class="button" onclick="loadFamilyPermissions()" style="margin-top: 1rem;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Update permission function
+    async function updatePermission(familyMemberId, permissionType, isEnabled) {
+      try {
+        const updateData = {};
+        updateData[permissionType] = isEnabled;
+        
+        const res = await fetch(`${API_BASE_URL}/family/permissions/${familyMemberId}`, {
+          method: 'PUT',
+          headers: { 
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const result = await res.json();
+        console.log('Permission updated:', result);
+        
+      } catch (error) {
+        console.error("Error updating permission:", error);
+        alert(`Error updating permission: ${error.message}`);
+        // Reload permissions to reset the toggle
+        loadFamilyPermissions();
       }
     }
 
@@ -750,7 +1147,7 @@
             "Content-Type": "application/json" 
           },
           body: JSON.stringify({ 
-            email: email, 
+            invitee_email: email, 
             relationship_type: relationship 
           })
         });
@@ -760,17 +1157,14 @@
         if (res.ok) {
           alert(data.msg || "Invitation sent successfully!");
           
-          // Clear form
           document.getElementById("inviteEmail").value = "";
           document.getElementById("relationship").value = "";
           
-          // Switch back to view family tab
           familySubtabs.forEach(t => t.classList.remove('active'));
           familySubsections.forEach(s => s.classList.remove('active'));
           familySubtabs[0].classList.add('active');
           familySubsections[0].classList.add('active');
           
-          // Refresh family list
           loadFamily();
         } else {
           throw new Error(data.detail || data.message || "Failed to send invitation");
@@ -785,7 +1179,7 @@
       }
     });
 
-    // Chat functionality
+    // Chat functionality (keeping your existing chat code)
     const chatLanding = document.getElementById("chatLanding");
     const chatRoomsDiv = document.getElementById("chatRooms");
     const chatMessages = document.getElementById("chatMessages");
@@ -808,61 +1202,59 @@
     });
 
     async function loadChats(){
-  chatRoomsDiv.innerHTML = '<div class="loading-state">Loading chat rooms...</div>';
-  try {
-    const res = await fetch(`${API_BASE_URL}/chats/my`, {
-      headers: { "Authorization": "Bearer "+token }
-    });
-    
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      chatRoomsDiv.innerHTML = '<div class="loading-state">Loading chat rooms...</div>';
+      try {
+        const res = await fetch(`${API_BASE_URL}/chats/my`, {
+          headers: { "Authorization": "Bearer "+token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const chats = await res.json();
+        chatRoomsDiv.innerHTML = "";
+        
+        if(!Array.isArray(chats) || chats.length === 0) {
+          chatRoomsDiv.innerHTML = `
+            <div class="empty-state">
+              <h4>No chat rooms found</h4>
+              <p>Your healthcare provider will create chat rooms for consultations.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        chats.forEach(c => {
+          const div = document.createElement("div");
+          div.className = "card";
+          
+          const title = document.createElement("h4");
+          title.textContent = c.name || "Chat Room";
+          
+          const button = document.createElement("button");
+          button.className = "button";
+          button.textContent = "Open";
+          
+          button.addEventListener('click', () => {
+            openChat(c.id, c.name || 'Chat Room');
+          });
+          
+          div.appendChild(title);
+          div.appendChild(button);
+          chatRoomsDiv.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading chats:', error);
+        chatRoomsDiv.innerHTML = `
+          <div class="error-state">
+            <h4>Error loading chat rooms</h4>
+            <p>Please check your connection and try again.</p>
+            <button class="button" onclick="loadChats()" style="margin-top: 1rem;">Retry</button>
+          </div>
+        `;
+      }
     }
-    
-    const chats = await res.json();
-    chatRoomsDiv.innerHTML = "";
-    
-    if(!Array.isArray(chats) || chats.length === 0) {
-      chatRoomsDiv.innerHTML = `
-        <div class="empty-state">
-          <h4>No chat rooms found</h4>
-          <p>Your healthcare provider will create chat rooms for consultations.</p>
-        </div>
-      `;
-      return;
-    }
-    
-    chats.forEach(c => {
-      const div = document.createElement("div");
-      div.className = "card";
-      
-      // Create elements safely instead of using innerHTML with onclick
-      const title = document.createElement("h4");
-      title.textContent = c.name || "Chat Room";
-      
-      const button = document.createElement("button");
-      button.className = "button";
-      button.textContent = "Open";
-      
-      // Add event listener instead of onclick attribute
-      button.addEventListener('click', () => {
-        openChat(c.id, c.name || 'Chat Room');
-      });
-      
-      div.appendChild(title);
-      div.appendChild(button);
-      chatRoomsDiv.appendChild(div);
-    });
-  } catch (error) {
-    console.error('Error loading chats:', error);
-    chatRoomsDiv.innerHTML = `
-      <div class="error-state">
-        <h4>Error loading chat rooms</h4>
-        <p>Please check your connection and try again.</p>
-        <button class="button" onclick="loadChats()" style="margin-top: 1rem;">Retry</button>
-      </div>
-    `;
-  }
-}
 
     function showChatLanding(){
       chatLanding.style.display = "block";
@@ -910,7 +1302,6 @@
     }
 
     function showMessage(msg){
-      // Remove loading/empty state if present
       const existingState = messagesDiv.querySelector('.loading-state, .empty-state');
       if (existingState) {
         existingState.remove();
@@ -954,7 +1345,15 @@
         });
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
         const { ws_token } = await res.json();
-        wsClient = new WebSocket(`wss://${API_BASE_URL.replace(/^https?:\/\//, '')}/chats/ws/${currentChatId}?ws_token=${ws_token}`);
+
+        let wsUrl;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      wsUrl = `ws://127.0.0.1:8000/chats/ws/${currentChatId}?ws_token=${ws_token}`;
+    } else {
+      wsUrl = `wss://${window.location.host}/chats/ws/${currentChatId}?ws_token=${ws_token}`;
+    }
+
+        wsClient = new WebSocket(wsUrl);
 
         sendBtn.disabled = true;
 
@@ -979,7 +1378,6 @@
       }
     }
 
-    // Chat input handling
     txt.addEventListener('input', () => {
       txt.style.height = 'auto';
       txt.style.height = Math.min(txt.scrollHeight, 96) + 'px';

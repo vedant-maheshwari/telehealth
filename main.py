@@ -136,7 +136,7 @@ async def global_exception_handler(request : Request, exc : Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000", "https://telehealth-webapp-123.azurewebsites.net"],
+    allow_origins=["http://127.0.0.1:8000", "localhost:8000", "https://telehealth-webapp-123.azurewebsites.net"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -232,7 +232,7 @@ def get_all_appointments(doctor = Depends(auth.check_doctor)):
             "id": app.id,
             "title": app.patient.name,
             "start": app.date_time.isoformat(),
-            "end": (app.date_time + timedelta(hours=1)).isoformat(),
+            "end": (app.date_time + timedelta(hours=30)).isoformat(),
             "status": app.status.value
         })
 
@@ -447,5 +447,101 @@ async def redis_test():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+
+@app.get('/patient/appointments/detailed')
+def get_patient_appointments_detailed(
+    current_user = Depends(auth.check_patient),
+    db: session = Depends(get_db)
+):
+    """Get detailed appointments for the current patient with doctor info"""
+    appointments = db.query(models.Appointments).filter(
+        models.Appointments.patient_id == current_user.id
+    ).all()
     
+    result = []
+    for appointment in appointments:
+        doctor_info = db.query(models.User).filter(models.User.id == appointment.doctor_id).first()
+        
+        result.append({
+            "id": appointment.id,
+            "doctor_id": appointment.doctor_id,
+            "doctor_name": doctor_info.name if doctor_info else "Unknown Doctor",
+            "doctor_email": doctor_info.email if doctor_info else "",
+            "appointment_date": appointment.date_time.isoformat(),
+            "appointment_time": appointment.date_time.strftime("%I:%M %p"),
+            "appointment_day": appointment.date_time.strftime("%A, %B %d, %Y"),
+            "status": appointment.status.value,
+            "status_display": appointment.status.value.title(),
+            "can_cancel": appointment.status.value == "pending",
+            "created_at": appointment.date_time.isoformat()
+        })
+    
+    # Sort by appointment date (most recent first)
+    result.sort(key=lambda x: x["appointment_date"], reverse=True)
+    return result
+
+@app.put('/patient/appointments/{appointment_id}/cancel')
+def cancel_patient_appointment(
+    appointment_id: int,
+    current_user = Depends(auth.check_patient),
+    db: session = Depends(get_db)
+):
+    """Cancel a patient's appointment"""
+    appointment = db.query(models.Appointments).filter(
+        models.Appointments.id == appointment_id,
+        models.Appointments.patient_id == current_user.id
+    ).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appointment.status.value != "pending":
+        raise HTTPException(status_code=400, detail="Can only cancel pending appointments")
+    
+    appointment.status = models.Status.REJECTED
+    db.commit()
+    
+    return {
+        "message": "Appointment cancelled successfully",
+        "appointment_id": appointment_id,
+        "status": "cancelled"
+    }
+
+@app.post('/patient/appointments/{appointment_id}/reschedule')
+def reschedule_appointment(
+    appointment_id: int,
+    new_appointment: schemas.BookAppointment,
+    current_user = Depends(auth.check_patient),
+    db: session = Depends(get_db)
+):
+    """Reschedule an existing appointment"""
+    # Find the existing appointment
+    existing_appointment = db.query(models.Appointments).filter(
+        models.Appointments.id == appointment_id,
+        models.Appointments.patient_id == current_user.id
+    ).first()
+    
+    if not existing_appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if existing_appointment.status.value != "pending":
+        raise HTTPException(status_code=400, detail="Can only reschedule pending appointments")
+    
+    # Update the appointment
+    existing_appointment.doctor_id = new_appointment.doctor_id
+    existing_appointment.date_time = new_appointment.appointment_date
+    existing_appointment.status = models.Status.PENDING
+    
+    db.commit()
+    db.refresh(existing_appointment)
+    
+    return {
+        "message": "Appointment rescheduled successfully",
+        "appointment": {
+            "id": existing_appointment.id,
+            "doctor_id": existing_appointment.doctor_id,
+            "appointment_date": existing_appointment.date_time.isoformat(),
+            "status": existing_appointment.status.value
+        }
+    }
 
