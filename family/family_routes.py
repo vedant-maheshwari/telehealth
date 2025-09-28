@@ -101,4 +101,28 @@ def all_family_members(current_user = Depends(auth.get_current_user)):
         })
     return result
          
-
+@router.delete('/remove_family_member/{member_id}')
+def remove_family_member(member_id: int, db: Session = Depends(get_db), current_user = Depends(auth.get_current_user)):
+    # Find the family connection where current_user is connected to member_id
+    connection = db.query(models.FamilyConnection).filter(
+        models.FamilyConnection.user_id == current_user.id,
+        models.FamilyConnection.family_member_id == member_id
+    ).first()
+    
+    if not connection:
+        raise HTTPException(status_code=404, detail="Family member not found")
+    
+    # Also remove the reverse connection if it exists
+    reverse_connection = db.query(models.FamilyConnection).filter(
+        models.FamilyConnection.user_id == member_id,
+        models.FamilyConnection.family_member_id == current_user.id
+    ).first()
+    
+    # Delete both connections
+    db.delete(connection)
+    if reverse_connection:
+        db.delete(reverse_connection)
+    
+    db.commit()
+    
+    return {"detail": "Family member removed successfully"}

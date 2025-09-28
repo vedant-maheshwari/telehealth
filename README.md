@@ -5,6 +5,7 @@ A comprehensive telehealth platform built with FastAPI and vanilla HTML/CSS/Java
 ## Architecture
 
 This is a full-stack telehealth application with:
+
 - **Backend**: FastAPI with SQLAlchemy ORM
 - **Database**: SQLite (development), easily configurable for PostgreSQL/MySQL in production
 - **Frontend**: Vanilla HTML/CSS/JavaScript with responsive design
@@ -16,6 +17,7 @@ This is a full-stack telehealth application with:
 ## Features
 
 ### Core Functionality
+
 - **Multi-role System**: Patients, Doctors, Family Members, and Admins
 - **Appointment Management**: Book, accept, reject, and manage appointments
 - **Family Connections**: Invite and manage family member access to patient data
@@ -24,6 +26,7 @@ This is a full-stack telehealth application with:
 - **Admin Dashboard**: User management and system administration
 
 ### Security Features
+
 - JWT token-based authentication
 - Password hashing with bcrypt
 - Role-based access control
@@ -42,12 +45,14 @@ This is a full-stack telehealth application with:
 ### Local Development Setup
 
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/vedant-maheshwari/telehealth.git
 cd telehealth
 ```
 
 2. **Create virtual environment**
+
 ```bash
 python -m venv venv
 # On Windows
@@ -57,11 +62,13 @@ source venv/bin/activate
 ```
 
 3. **Install dependencies**
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. **Set up environment variables**
+
 Create a `.env` file in the root directory:
 ```env
 SECRET_KEY=your-secret-key-here
@@ -70,6 +77,7 @@ REDIS_URL=redis://localhost:6379
 ```
 
 5. **Initialize the database**
+   
 ```bash
 python -c "from database import engine; from models import Base; Base.metadata.create_all(engine)"
 ```
@@ -92,6 +100,7 @@ python -m http.server 3000
 ```
 
 7. **Access the application**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs

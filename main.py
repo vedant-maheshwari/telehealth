@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 from fastapi.staticfiles import StaticFiles
 import schemas, utils, models
 from sqlalchemy.orm import session
@@ -28,8 +25,6 @@ import asyncio
 from contextlib import asynccontextmanager
 import os
 import socket
-
-
 
 async def listen_for_expired_keys():
     pubsub = redis_client.pubsub()
@@ -72,8 +67,6 @@ log_colors = {
 
 logging.basicConfig(
     level=logging.INFO,
-    # format="[%(asctime)s] (line no %(lineno)s) : %(levelname)s %(message)s",
-    # datefmt="%d-%m-%Y %H:%M:%S",
     handlers=[colorlog.StreamHandler()]
 )
 
@@ -91,19 +84,8 @@ Base.metadata.create_all(engine)
 app = FastAPI(lifespan=lifespan)
 
 app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
+# app.mount("/frontend", StaticFiles(directory="frontend/build", html=True), name="frontend")
 
-# api_router = APIRouter()
-
-# redis_client = redis.Redis(host='localhost', port=6379, db=0)
-
-# Try resolving "redis" inside Docker
-# try:
-#     socket.gethostbyname("redis")
-#     default_url = "redis://redis:6379/0"
-# except socket.gaierror:
-#     default_url = "redis://localhost:6379/0"
-
-# redis_client = redis.from_url(default_url)
 REDIS_URL = os.getenv("REDIS_URL")
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
@@ -126,17 +108,10 @@ async def global_exception_handler(request : Request, exc : Exception):
         }
     )
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # for development, allow all. Later restrict to your frontend domain
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000", "https://telehealth-webapp-123.azurewebsites.net"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -326,61 +301,6 @@ async def reserve_slot(appointment : schemas.BookAppointment, user_id: int):
     )
 
     return {"message": "Slot reserved", "expires_in": HOLD_TTL}
-
-# @app.post('/confirm_slot')
-# async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Query(...), db : session = Depends(get_db)):
-    
-#     slot_reserve_key = crud.make_slot_key(appointment.doctor_id, appointment.appointment_date)
-#     holder = await redis_client.get(slot_reserve_key)
-
-#     if holder is None:
-#         raise HTTPException(410, "Reservation expired or not found")
-#     if int(holder.decode()) != user_id:
-#         raise HTTPException(403, "You do not hold this reservation")
-    
-#     booking = crud.book_appointment(db, appointment, user_id)
-
-#     if not booking:
-#         HTTPException(status_code=409, detail='booking cannot be processed')
-
-#     await redis_client.delete(slot_reserve_key)
-
-#     await redis_client.aclose()
-
-#     return {"message": "Booking confirmed", "slot_time": appointment.appointment_date}
-
-# @app.post('/confirm_slot')
-# async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Query(...), db : session = Depends(get_db)):
-    
-#     slot_reserve_key = crud.make_slot_key(appointment.doctor_id, appointment.appointment_date)
-#     holder = await redis_client.get(slot_reserve_key)
-
-#     if holder is None:
-#         raise HTTPException(410, "Reservation expired or not found")
-    
-#     # Handle both bytes and string responses
-#     try:
-#         if isinstance(holder, bytes):
-#             holder_value = int(holder.decode())
-#         else:
-#             holder_value = int(holder)
-#     except (ValueError, AttributeError) as e:
-#         raise HTTPException(500, f"Invalid reservation data: {e}")
-    
-#     if holder_value != user_id:
-#         raise HTTPException(403, "You do not hold this reservation")
-    
-#     booking = crud.book_appointment(db, appointment, user_id)
-
-#     if not booking:
-#         raise HTTPException(status_code=409, detail='booking cannot be processed')
-
-#     await redis_client.delete(slot_reserve_key)
-
-#     await redis_client.aclose()
-
-#     return {"message": "Booking confirmed", "slot_time": appointment.appointment_date}
-
 
 @app.post('/confirm_slot')
 async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Query(...), db : session = Depends(get_db)):
