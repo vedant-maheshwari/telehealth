@@ -1,157 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <style>
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f0f4f8, #d9e8fc);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background: #fff;
-            padding: 30px 40px;
-            border-radius: 16px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #1976d2;
-        }
-
-        label {
-            display: block;
-            text-align: left;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #1976d2;
-            box-shadow: 0 0 5px rgba(25,118,210,0.3);
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            border: none;
-            background-color: #1976d2;
-            color: #fff;
-            font-size: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        button:hover {
-            background-color: #1565c0;
-        }
-
-        .register-link {
-            display: block;
-            margin-top: 15px;
-            color: #1976d2;
-            text-decoration: none;
-        }
-
-        .register-link:hover {
-            text-decoration: underline;
-        }
-
-        .error {
-            margin-top: 15px;
-            color: red;
-            font-size: 0.9rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="dark-login.css"> <!-- external CSS -->
 </head>
 <body>
-    <div class="container">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <label>Email:</label>
-            <input type="text" id="email" required>
+  <!-- Floating healthcare emojis -->
+  <div class="floating-emoji-1">💉</div>
+  <div class="floating-emoji-2">🧬</div>
+  <div class="floating-emoji-3">⚕️</div>
+  <div class="floating-emoji-4">🔬</div>
+  <div class="floating-emoji-5">🧪</div>
+  <div class="floating-emoji-6">💝</div>
 
-            <label>Password:</label>
-            <input type="password" id="password" required>
-
-            <!-- Important: type="button" prevents reload -->
-            <button type="button" id="loginBtn">Login</button>
-        </form>
-        <a href="register.html" class="register-link">Don't have an account? Register here</a>
-        <p id="errorMsg" class="error"></p>
+  <div class="container">
+    <div class="header">
+      <div class="text">Login</div>
+      <div class="underline"></div>
     </div>
 
-    <script>
-        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
-        document.getElementById("loginBtn").addEventListener("click", async function(event) {
-            event.preventDefault();
+    <form id="loginForm">
+      <div class="inputs">
+        <!-- Email -->
+        <div class="input">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 13.065l11.555-8.316A1.25 1.25 0 0 0 22.5 3h-21a1.25 1.25 0 0 0-.944 1.749L12 13.065z"/>
+            <path d="M12 15.935L.445 7.62A1.25 1.25 0 0 0 0 8.75V20.5A1.5 1.5 0 0 0 1.5 22h21a1.5 1.5 0 0 0 1.5-1.5V8.75c0-.397-.188-.772-.445-1.13L12 15.935z"/>
+          </svg>
+          <input type="text" id="email" placeholder="Email" required>
+        </div>
 
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const errorMsg = document.getElementById("errorMsg");
+        <!-- Password -->
+        <div class="input">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zm-5 8a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 12 17zm3-8H9V7a3 3 0 0 1 6 0v2z"/>
+          </svg>
+          <input type="password" id="password" placeholder="Password" required>
+        </div>
+      </div>
 
-            errorMsg.textContent = ""; // clear old errors
+      <!-- Error Message -->
+      <p id="errorMsg" class="error" style="display:none;"></p>
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/token`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({
-                        username: email,
-                        password: password
-                    })
-                });
+      <!-- Submit -->
+      <div class="submit-container">
+        <button type="button" id="loginBtn" class="submit">Login</button>
+      </div>
+    </form>
 
-                if (!response.ok) {
-                    throw new Error("Invalid email or password");
-                }
+    <!-- Switch / Register -->
+    <div class="switch-action">
+      <p>Don't have an account? <span onclick="window.location.href='register.html'">Register here</span></p>
+    </div>
 
-                const data = await response.json();
-                console.log("Login Response:", data);
+    <!-- Forgot Password -->
+    <div class="forgot-password">
+      <span onclick="alert('Password recovery not implemented yet.')">Forgot Password?</span>
+    </div>
+  </div>
 
-                // Save token to localStorage
-                sessionStorage.setItem("token", data.access_token);
-                sessionStorage.setItem("role", data.role);
-                sessionStorage.setItem("user_id", data.user_id);
+  <script>
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; 
 
-                // Redirect based on role
-                if (data.role === "doctor") {
-                    window.location.href = "doctor_dashboard.html";
-                } else if (data.role === "patient") {
-                    window.location.href = "patient_dashboard.html";
-                } else {
-                    window.location.href = "family_dashboard.html"; // default fallback
-                }
+    document.getElementById("loginBtn").addEventListener("click", async function(event) {
+      event.preventDefault();
 
-                // // Redirect to dashboard
-                // window.location.href = "patient_dashboard.html";
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const errorMsg = document.getElementById("errorMsg");
 
-            } catch (err) {
-                console.error(err);
-                errorMsg.textContent = err.message;
-            }
+      errorMsg.style.display = "none";
+      errorMsg.textContent = "";
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ username: email, password: password })
         });
-    </script>
+
+        if (!response.ok) {
+          throw new Error("Invalid email or password");
+        }
+
+        const data = await response.json();
+        console.log("Login Response:", data);
+
+        // Save token to session storage
+        sessionStorage.setItem("token", data.access_token);
+        sessionStorage.setItem("role", data.role);
+        sessionStorage.setItem("user_id", data.user_id);
+
+        // Redirect by role
+        if (data.role === "doctor") {
+          window.location.href = "doctor_dashboard.html";
+        } else if (data.role === "patient") {
+          window.location.href = "patient_dashboard.html";
+        } else {
+          window.location.href = "family_dashboard.html";
+        }
+      } catch (err) {
+        console.error(err);
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = "block";
+      }
+    });
+  </script>
 </body>
 </html>

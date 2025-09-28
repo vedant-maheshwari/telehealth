@@ -153,7 +153,7 @@ class ChatMessage(Base):
 
     chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="messages")
     # sender relationship optional:
-    sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id])
+    # sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id])
 
 
 class DoctorAvailability(Base):

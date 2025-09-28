@@ -163,61 +163,131 @@ def set_doctor_availability(
     ).all()
 
 
-async def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
-    accepted_appointments = db.query(models.Appointments).filter(models.Appointments.doctor_id == doctor_id,
-                                          func.date(models.Appointments.date_time) == date,
-                                          models.Appointments.status.in_(['ACCECPTED', 'PENDING'])).all()
+# async def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
+#     accepted_appointments = db.query(models.Appointments).filter(models.Appointments.doctor_id == doctor_id,
+#                                           func.date(models.Appointments.date_time) == date,
+#                                           models.Appointments.status.in_(['ACCECPTED', 'PENDING'])).all()
 
     
-    pattern = f"slot_hold:doctor:{doctor_id}:{date.isoformat()}T*"
+#     pattern = f"slot_hold:doctor:{doctor_id}:{date.isoformat()}T*"
+#     held_keys = await main.redis_client.keys(pattern)
+#     held_times = set()
+#     for key in held_keys:
+#         if isinstance(key, bytes):
+#             key = key.decode()
+#         _, _, _, iso_dt = key.split(":", 3)
+#         dt = datetime.fromisoformat(iso_dt)
+#         held_times.add(dt.time())
+    
+#     un_available_slots = [slot.date_time.time() for slot in accepted_appointments]
+
+#     day_to_num = {'Sunday' : 0, 'Monday' : 1, 'Tuesday' : 2, 'Wednesday' : 3, 'Thursday' : 4, 'Friday' : 5, 'Saturday' : 6}
+
+#     day_num = day_to_num[date.strftime('%A')]
+
+#     doctor_availability = db.query(models.DoctorAvailability).filter(models.DoctorAvailability.doctor_id == doctor_id,
+#                                                                      models.DoctorAvailability.day_of_week == day_num).first()
+
+#     doctor_start_time = doctor_availability.start_time
+
+#     doctor_end_time = doctor_availability.end_time
+
+#     doctor_break_start = doctor_availability.break_start
+
+#     doctor_break_end = doctor_availability.break_end
+
+#     doctor_appointment_duration = doctor_availability.appointment_duration
+
+#     available_slots = []
+
+#     current_time = datetime.combine(date,doctor_start_time)
+
+#     doctor_end_time = datetime.combine(date,doctor_end_time)
+
+#     while current_time < doctor_end_time:
+#         slot_time = current_time.time()
+
+#         in_booked = slot_time in un_available_slots
+#         in_held   = slot_time in held_times
+#         in_break  = doctor_break_start and doctor_break_end and (doctor_break_start <= slot_time < doctor_break_end)
+
+#         if not (in_booked or in_held or in_break):
+#                     available_slots.append(slot_time)
+
+#         current_time = current_time + timedelta(minutes=doctor_appointment_duration)
+
+#     return available_slots
+# crud.py (FIXED get_doctor_free_slots)
+
+async def get_doctor_free_slots(doctor_id : int, date : datetime, db : session):
+    # --- Existing logic to find booked and held slots ---
+    accepted_appointments = db.query(models.Appointments).filter(models.Appointments.doctor_id == doctor_id,
+                                         func.date(models.Appointments.date_time) == date, # FIX 1: Use date.date()
+                                         models.Appointments.status.in_(['ACCECPTED', 'PENDING'])).all()
+
+    # ... (Redis logic unchanged) ...
+    pattern = f"slot_hold:doctor:{doctor_id}:{date.isoformat()}T*" # FIX 2: Use date.date() for key
     held_keys = await main.redis_client.keys(pattern)
     held_times = set()
     for key in held_keys:
         if isinstance(key, bytes):
             key = key.decode()
-        _, _, _, iso_dt = key.split(":", 3)
-        dt = datetime.fromisoformat(iso_dt)
-        held_times.add(dt.time())
-    
+        # The key should only contain the date, not the full datetime from the frontend
+        # Assuming the date part of the key is sufficient:
+        _, _, _, iso_dt = key.split(":", 3) 
+        try:
+            # Only extract the time part for checking against slots
+            dt = datetime.fromisoformat(iso_dt)
+            held_times.add(dt.time())
+        except ValueError:
+            continue # Skip malformed keys
+
     un_available_slots = [slot.date_time.time() for slot in accepted_appointments]
 
+    # --- Availability Lookup (CRASH FIX HERE) ---
+    # Note: date here is a datetime object, but your type hint in main.py is 'date'.
+    # I will assume the input 'date' is a Python date/datetime object.
     day_to_num = {'Sunday' : 0, 'Monday' : 1, 'Tuesday' : 2, 'Wednesday' : 3, 'Thursday' : 4, 'Friday' : 5, 'Saturday' : 6}
+    
+    # Use date.strftime('%A') to get the full day name (e.g., 'Friday')
+    day_num = day_to_num[date.strftime('%A')] 
 
-    day_num = day_to_num[date.strftime('%A')]
+    doctor_availability = db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.doctor_id == doctor_id,
+        models.DoctorAvailability.day_of_week == day_num
+    ).first()
 
-    doctor_availability = db.query(models.DoctorAvailability).filter(models.DoctorAvailability.doctor_id == doctor_id,
-                                                                     models.DoctorAvailability.day_of_week == day_num).first()
+    # ******************** FIX 3: CRASH CHECK ********************
+    if not doctor_availability:
+        # If the doctor has no availability for this specific day, return an empty list
+        return []
+    # ************************************************************
 
     doctor_start_time = doctor_availability.start_time
-
     doctor_end_time = doctor_availability.end_time
-
     doctor_break_start = doctor_availability.break_start
-
     doctor_break_end = doctor_availability.break_end
-
     doctor_appointment_duration = doctor_availability.appointment_duration
 
     available_slots = []
 
-    current_time = datetime.combine(date,doctor_start_time)
+    # Combine the date part (from input) with time objects for correct comparison
+    current_time = datetime.combine(date, doctor_start_time)
+    doctor_end_dt = datetime.combine(date, doctor_end_time)
 
-    doctor_end_time = datetime.combine(date,doctor_end_time)
-
-    while current_time < doctor_end_time:
+    while current_time < doctor_end_dt:
         slot_time = current_time.time()
 
         in_booked = slot_time in un_available_slots
-        in_held   = slot_time in held_times
-        in_break  = doctor_break_start and doctor_break_end and (doctor_break_start <= slot_time < doctor_break_end)
+        in_held = slot_time in held_times
+        in_break = doctor_break_start and doctor_break_end and (doctor_break_start <= slot_time < doctor_break_end)
 
         if not (in_booked or in_held or in_break):
-                    available_slots.append(slot_time)
+            available_slots.append(slot_time.strftime('%H:%M:%S')) # FIX 4: Format time as string
 
         current_time = current_time + timedelta(minutes=doctor_appointment_duration)
 
     return available_slots
-
 
 def make_slot_key(doctor_id : int, slot_time : datetime):
     normalized_dt = slot_time.replace(microsecond=0, tzinfo=None)

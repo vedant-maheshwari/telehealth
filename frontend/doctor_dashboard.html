@@ -4,54 +4,143 @@
   <meta charset="UTF-8">
   <title>Doctor Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f5f8fc; margin: 0; }
-    header { background: #1976d2; color: #fff; padding: 15px; text-align: center; }
-    .container { padding: 20px; max-width: 800px; margin: auto; }
-    .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    button { padding: 10px 15px; border: none; background: #1976d2; color: white; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-    button:hover { background: #125aa1; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f8fc;
+      display: flex;
+      height: 100vh;
+    }
 
-    /* Modal styles */
-    .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-    .modal-content { background: #fff; margin: 8% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; }
-    .close { float: right; font-size: 20px; cursor: pointer; }
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: #1976d2;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .sidebar h2 {
+      margin: 0 0 20px;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+    .sidebar button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      background: #1565c0;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: left;
+    }
+    .sidebar button:hover {
+      background: #0d47a1;
+    }
 
-    input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
-    .modal-actions { display: flex; justify-content: space-between; margin-top: 15px; }
-    .cancel-btn { background: #aaa; }
-    .cancel-btn:hover { background: #888; }
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .chat-card, .vital-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
 
-    .chat-card, .vital-card { background: #fff; border-radius: 10px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    /* Buttons in content */
+    .main button {
+      padding: 10px 15px;
+      border: none;
+      background: #1976d2;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .main button:hover {
+      background: #125aa1;
+    }
+    .cancel-btn {
+      background: #aaa;
+    }
+    .cancel-btn:hover {
+      background: #888;
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 6% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h2>Doctor Dashboard</h2>
-  </header>
-  <div class="container">
-    <div class="card">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Doctor</h2>
+    <button onclick="openSection('welcome')">Dashboard</button>
+    <button onclick="openSection('chat')">Chats</button>
+    <button onclick="location.href='doctor_appointment.html'">Appointments</button>
+    <button onclick="openVitalsModal()">Add Vitals</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="card" id="welcome">
       <h3>Welcome, <span id="userName"></span></h3>
       <p>Email: <span id="userEmail"></span></p>
     </div>
 
-    <div class="card" id="createSection" style="display:none;">
+    <div class="card" id="chatSection" style="display:none;">
       <h3>Chat</h3>
       <button id="createBtn">Create Chat Room</button>
       <button onclick="viewMyChats()">View My Chats</button>
-    </div>
-
-    <div class="card">
-      <h3>Appointment</h3>
-      <button onclick="location.href='doctor_appointment.html'">View Appointments</button>
-    </div>
-
-    <div class="card">
-      <h3>Add Patient Vitals</h3>
-      <button onclick="openVitalsModal()">Add Vitals</button>
-    </div>
-
-    <div class="card">
-      <button onclick="logout()">Logout</button>
     </div>
   </div>
 
@@ -60,13 +149,10 @@
     <div class="modal-content">
       <span class="close" onclick="closeCreateModal()">&times;</span>
       <h2>Create Chat Room</h2>
-
       <label>Room Name:</label>
       <input type="text" id="roomName" placeholder="Enter chat room name">
-
       <label>Participant IDs (comma separated):</label>
       <input type="text" id="participants" placeholder="e.g. 2,5,7">
-
       <div class="modal-actions">
         <button id="submitRoomBtn">Create</button>
         <button class="cancel-btn" onclick="closeCreateModal()">Cancel</button>
@@ -88,13 +174,10 @@
     <div class="modal-content">
       <span class="close" onclick="closeVitalsModal()">&times;</span>
       <h2>Add Patient Vitals</h2>
-
       <label>Patient Email:</label>
       <input type="email" id="vitalEmail" placeholder="patient@example.com">
-
       <label>Blood Pressure (BP):</label>
       <input type="number" id="vitalBP" placeholder="Enter BP value">
-
       <div class="modal-actions">
         <button id="submitVitalsBtn">Submit</button>
         <button class="cancel-btn" onclick="closeVitalsModal()">Cancel</button>
@@ -103,7 +186,8 @@
   </div>
 
   <script>
-    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
+    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net";
+
     async function loadUser() {
       const token = sessionStorage.getItem("token");
       if (!token) { window.location.href = "login.html"; return; }
@@ -114,13 +198,11 @@
         if (!res.ok) throw new Error("Unauthorized");
         const user = await res.json();
         sessionStorage.setItem("user_id", user.id);
-        const role = user.role;
         document.getElementById("userName").textContent = user.name;
         document.getElementById("userEmail").textContent = user.email;
 
-        // Show create chat section for doctors
-        if (role === "doctor") {
-          document.getElementById("createSection").style.display = "block";
+        if (user.role === "doctor") {
+          document.getElementById("chatSection").style.display = "block";
           document.getElementById("createBtn").addEventListener("click", openCreateModal);
           document.getElementById("submitRoomBtn").addEventListener("click", createChatRoom);
         }
@@ -131,7 +213,12 @@
       }
     }
 
-    // === MODALS ===
+    function openSection(id) {
+      document.querySelectorAll(".main .card").forEach(el => el.style.display = "none");
+      document.getElementById(id).style.display = "block";
+    }
+
+    // === Modal Handlers ===
     function openCreateModal() { document.getElementById("createChatModal").style.display = "block"; }
     function closeCreateModal() { document.getElementById("createChatModal").style.display = "none"; }
     function closeModal() { document.getElementById("chatModal").style.display = "none"; }
@@ -143,7 +230,7 @@
       window.location.href = "login.html";
     }
 
-    // === CREATE CHAT ROOM ===
+    // === Create Chat Room ===
     async function createChatRoom() {
       const token = sessionStorage.getItem("token");
       const name = document.getElementById("roomName").value.trim();
@@ -171,7 +258,7 @@
       location.href = `chat.html?chatId=${data.id}`;
     }
 
-    // === VIEW CHATS ===
+    // === View Chats ===
     async function viewMyChats() {
       const token = sessionStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/chats/my`, {
@@ -197,11 +284,10 @@
     }
 
     function openChat(chatId) {
-      if (!chatId) { alert("Chat ID required"); return; }
       location.href = `chat.html?chatId=${chatId}`;
     }
 
-    // === ADD VITALS ===
+    // === Add Vitals ===
     document.getElementById("submitVitalsBtn").addEventListener("click", async () => {
       const email = document.getElementById("vitalEmail").value.trim();
       const bp = parseInt(document.getElementById("vitalBP").value.trim());

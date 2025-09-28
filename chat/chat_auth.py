@@ -9,14 +9,8 @@ from database import get_db
 router = APIRouter(tags=["chat-auth"])
 
 # Use a separate key for WS tokens (you can also derive from auth.SECRET_KEY)
-WS_SECRET_KEY = getattr(auth, "WS_SECRET_KEY", None)
-if not WS_SECRET_KEY:
-    if getattr(auth, "SECRET_KEY", None):
-        WS_SECRET_KEY = auth.SECRET_KEY + "_ws"
-    else:
-        WS_SECRET_KEY = "default_ws_secret_key"  # hard-coded fallback
-
-WS_ALGORITHM = getattr(auth, "WS_ALGORITHM", "HS256")
+WS_SECRET_KEY = getattr(auth, "WS_SECRET_KEY", auth.SECRET_KEY + "_ws")
+WS_ALGORITHM = getattr(auth, "WS_ALGORITHM", auth.ALGORITHM)
 WS_TOKEN_EXPIRE_SECONDS = 60  # short-lived
 
 @router.post("/ws-token")
