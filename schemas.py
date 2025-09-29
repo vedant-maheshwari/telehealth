@@ -87,9 +87,16 @@ class AppointmentResponse(BaseModel):
     appointment_id : int
     action : str  # "accept" or "reject"
 
-class Vitals_update(BaseModel):
-    patient_email : EmailStr
-    bp : int
+class VitalsCreate(BaseModel):
+    patient_email: EmailStr
+    bp: Optional[int] = None
+    heart_rate: Optional[int] = None
+    temperature: Optional[float] = None
+    notes: Optional[str] = None
+
+class ChatCreateWithEmails(BaseModel):
+    name: str
+    participant_emails: List[EmailStr]
 
 
 class CreateChatRoomIn(BaseModel):

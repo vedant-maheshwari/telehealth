@@ -101,9 +101,17 @@
         <a href="register.html" class="register-link">Don't have an account? Register here</a>
         <p id="errorMsg" class="error"></p>
     </div>
-
+    <script src="config.js"></script>
     <script>
-        const API_BASE_URL = "http://127.0.0.1:8000"; // Change if your backend runs elsewhere
+        const getApiBaseUrl = () => {
+        if (window.location.hostname.includes('azurewebsites.net')) {
+            return "https://telehealth-webapp-123.azurewebsites.net";
+        }
+        return "http://localhost:8000";
+        };
+
+        const API_BASE_URL = API_CONFIG.getApiBaseUrl();
+        
         document.getElementById("loginBtn").addEventListener("click", async function(event) {
             event.preventDefault();
 

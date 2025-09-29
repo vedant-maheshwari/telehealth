@@ -115,13 +115,22 @@ class Appointments(Base):
 class Vitals(Base):
     __tablename__ = 'vitals'
 
-    id : Mapped[int] = mapped_column(primary_key=True)
-    patient_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
-    doctor_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
-    bp : Mapped[int] = mapped_column(nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    doctor_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    
+    # Multiple vital measurements (all optional)
+    bp: Mapped[int] = mapped_column(nullable=True)  # Systolic Blood Pressure
+    heart_rate: Mapped[int] = mapped_column(nullable=True)  # BPM
+    temperature: Mapped[float] = mapped_column(nullable=True)  # Fahrenheit
+    notes: Mapped[str] = mapped_column(Text, nullable=True)  # Additional notes
+    
+    # Timestamp for when vitals were recorded
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    patient : Mapped['User'] = relationship(back_populates='vitals', foreign_keys=[patient_id])
-    doctor : Mapped['User'] = relationship(back_populates='doctor_for_patient', foreign_keys=[doctor_id])
+    # Relationships
+    patient: Mapped['User'] = relationship(back_populates='vitals', foreign_keys=[patient_id])
+    doctor: Mapped['User'] = relationship(back_populates='doctor_for_patient', foreign_keys=[doctor_id])
 
 
 class ChatRoom(Base):

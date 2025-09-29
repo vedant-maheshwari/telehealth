@@ -128,22 +128,22 @@ def appointment_response(db : session, response : schemas.AppointmentResponse):
     db.refresh(appointment)
     return appointment
 
-def add_vital(vital : schemas.Vitals_update, doctor_id : int, db : session):
-    add_patient = db.query(models.User).filter(models.User.email == vital.patient_email).first()
-    if not add_patient:
-        return None
-    add_vital = models.Vitals(
-        patient_id = add_patient.id,
-        doctor_id = doctor_id,
-        bp = vital.bp
-    )
-    db.add(add_vital)
-    db.commit()
-    db.refresh(add_vital)
-    return add_vital
+# def add_vital(vital : schemas.Vitals_update, doctor_id : int, db : session):
+#     add_patient = db.query(models.User).filter(models.User.email == vital.patient_email).first()
+#     if not add_patient:
+#         return None
+#     add_vital = models.Vitals(
+#         patient_id = add_patient.id,
+#         doctor_id = doctor_id,
+#         bp = vital.bp
+#     )
+#     db.add(add_vital)
+#     db.commit()
+#     db.refresh(add_vital)
+#     return add_vital
 
-def get_vitals(patient : models.User):
-    return patient.vitals
+# def get_vitals(patient : models.User):
+#     return patient.vitals
 
 
 # def set_doctor_availability(

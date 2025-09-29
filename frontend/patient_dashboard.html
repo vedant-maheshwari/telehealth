@@ -595,10 +595,19 @@
       </div>
     </section>
   </div>
-
+<script src="config.js"></script>
   <script>
     // Constants
-    const API_BASE_URL = "http://127.0.0.1:8000";
+    const getApiBaseUrl = () => {
+      if (window.location.hostname.includes('azurewebsites.net')) {
+        return "https://telehealth-webapp-123.azurewebsites.net";
+      }
+      return "http://localhost:8000";
+    };
+
+    const API_BASE_URL = API_CONFIG.getApiBaseUrl();
+    console.log('Using API Base URL:', API_BASE_URL);
+
     const token = sessionStorage.getItem("token") || localStorage.getItem("token");
     
     if(!token) { 

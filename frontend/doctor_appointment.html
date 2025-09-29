@@ -68,9 +68,9 @@
       </div>
     </div>
   </div>
-
+<script src="config.js"></script>
   <script>
-    const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
+    const API_BASE_URL = API_CONFIG.getApiBaseUrl();
     document.addEventListener('DOMContentLoaded', async function() {
       const token = sessionStorage.getItem("token");
       if (!token) {

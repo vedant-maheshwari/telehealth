@@ -101,9 +101,9 @@
         <a href="register.html" class="register-link">Don't have an account? Register here</a>
         <p id="errorMsg" class="error"></p>
     </div>
-
+<script src="config.js"></script>
     <script>
-        const API_BASE_URL = "https://telehealth-webapp-123.azurewebsites.net"; // Change if your backend runs elsewhere
+        const API_BASE_URL = API_CONFIG.getApiBaseUrl();
         document.getElementById("loginBtn").addEventListener("click", async function(event) {
             event.preventDefault();
 

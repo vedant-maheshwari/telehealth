@@ -205,17 +205,17 @@
       <button id="modalCloseBtn">Close</button>
     </div>
   </div>
-
+  <script src="config.js"></script>
   <script>
     // Environment-aware API URL
     const getApiBaseUrl = () => {
       if (window.location.hostname.includes('azurewebsites.net')) {
-        return window.location.origin;
+        return "https://telehealth-webapp-123.azurewebsites.net";
       }
       return "http://localhost:8000";
     };
 
-    const API_BASE_URL = getApiBaseUrl();
+    const API_BASE_URL = API_CONFIG.getApiBaseUrl();
     const API_BASE_URL_WS = window.location.hostname.includes('azurewebsites.net') 
       ? window.location.host 
       : "localhost:8000";

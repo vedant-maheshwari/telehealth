@@ -510,6 +510,36 @@ def get_patient_vitals_for_family(
     
     return crud.get_vitals(patient)
 
+@router.get("/patient-records/{patient_id}")
+def get_patient_records_for_family(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.check_family)
+):
+    """
+    Family members can fetch vitals for a patient if they have view_records permission.
+    """
+    # Verify family relationship
+    fc = db.query(models.FamilyConnections).filter(
+        models.FamilyConnections.patient_id == patient_id,
+        models.FamilyConnections.family_member_id == current_user.id
+    ).first()
+    if not fc:
+        raise HTTPException(status_code=403, detail="No access to this patient")
+
+    # Check view_records permission
+    fp = db.query(models.FamilyPermissions).filter(
+        models.FamilyPermissions.family_member_id == current_user.id
+    ).first()
+    if not fp or "view_records" not in fp.permissions:
+        raise HTTPException(status_code=403, detail="No permission to view records")
+
+    # Fetch vitals
+    vitals = db.query(models.Vitals).filter(
+        models.Vitals.patient_id == patient_id
+    ).order_by(models.Vitals.timestamp.desc()).all()
+    return vitals
+
 
 
 # Helper function to check family permissions

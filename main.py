@@ -136,7 +136,13 @@ async def global_exception_handler(request : Request, exc : Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8000", "localhost:8000", "https://telehealth-webapp-123.azurewebsites.net"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:8080", 
+        "http://127.0.0.1:8000",
+        "https://telehealth-webapp-123.azurewebsites.net",  # Add your Azure domain
+        "https://*.azurewebsites.net"  # Allow all Azure subdomains
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -243,17 +249,49 @@ def appointment_response(response : schemas.AppointmentResponse, db : session = 
     return crud.appointment_response(db, response)
 
 @app.post('/add_vital')
-def add_vital(vital : schemas.Vitals_update, db : session = Depends(get_db), doctor = Depends(auth.check_doctor)):
-    result = crud.add_vital(vital,doctor.id, db)
-    if result is None:
-        raise HTTPException(status_code=404, detail='patient not found')
-    else:
-        return result
+def add_vital(
+    vital_data: schemas.VitalsCreate, 
+    db: session = Depends(get_db), 
+    doctor = Depends(auth.check_doctor)
+):
+    # Find patient by email
+    patient = db.query(models.User).filter(
+        models.User.email == vital_data.patient_email,
+        models.User.role == models.UserRoles.PATIENT
+    ).first()
     
-@app.get('/get_vital')
-def get_vital(patient = Depends(auth.check_patient)):
-    return crud.get_vitals(patient)
+    if not patient:
+        raise HTTPException(status_code=404, detail='Patient not found with this email')
+    
+    # Create vital record with timestamp
+    vital_record = models.Vitals(
+        patient_id=patient.id,
+        doctor_id=doctor.id,
+        bp=vital_data.bp,
+        heart_rate=vital_data.heart_rate,
+        temperature=vital_data.temperature,
+        notes=vital_data.notes,
+        timestamp=datetime.utcnow()
+    )
+    
+    db.add(vital_record)
+    db.commit()
+    db.refresh(vital_record)
+    
+    return {
+        "message": "Vitals added successfully",
+        "vital_id": vital_record.id,
+        "patient_name": patient.name,
+        "timestamp": vital_record.timestamp
+    }
 
+@app.get('/get_vital')
+def get_vitals(patient = Depends(auth.check_patient), db: session = Depends(get_db)):
+    vitals = db.query(models.Vitals).filter(
+        models.Vitals.patient_id == patient.id
+    ).order_by(models.Vitals.timestamp.desc()).all()
+    
+    return vitals
 
 @app.post('/doctor/set_availability')
 def set_doctor_availability(

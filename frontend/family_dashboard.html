@@ -386,7 +386,7 @@
   <div class="container">
     <!-- User Info Card -->
     <div class="card">
-      <h3>👤 Account Information</h3>
+      <h3> Account Information</h3>
       <p><strong>Name:</strong> <span id="userNameDetail"></span></p>
       <p><strong>Email:</strong> <span id="userEmail"></span></p>
       <div style="margin-top: 15px;">
@@ -397,13 +397,13 @@
 
     <!-- Patients Access Section -->
     <div class="card">
-      <h3>👨‍👩‍👧‍👦 Your Family Members</h3>
+      <h3> Your Family Members</h3>
       <div id="patientsContainer" class="loading-state">Loading your family members...</div>
     </div>
 
     <!-- Chat Rooms Section -->
     <div class="card">
-      <h3>💬 Chat Rooms</h3>
+      <h3> Chat Rooms</h3>
       <div id="chatRoomsContainer" class="loading-state">Loading chat rooms...</div>
     </div>
   </div>
@@ -450,17 +450,17 @@
       </div>
     </div>
   </div>
-
+  <script src="config.js"></script>
   <script>
     // Environment-aware API URL
     const getApiBaseUrl = () => {
       if (window.location.hostname.includes('azurewebsites.net')) {
-        return window.location.origin;
+        return "https://telehealth-webapp-123.azurewebsites.net";
       }
       return "http://localhost:8000";
     };
 
-    const API_BASE_URL = getApiBaseUrl();
+    const API_BASE_URL = API_CONFIG.getApiBaseUrl();
     console.log('Using API Base URL:', API_BASE_URL);
 
     const token = sessionStorage.getItem("token") || localStorage.getItem("token");
@@ -579,15 +579,15 @@
             <div class="action-buttons">
               <button class="btn btn-primary" onclick="viewAppointments(${patient.patient_id}, '${patient.patient_name}')" 
                       ${!permissions.can_view_records ? 'disabled title="No permission to view appointments"' : ''}>
-                📅 View Appointments
+                 View Appointments
               </button>
               <button class="btn btn-success" onclick="viewVitals(${patient.patient_id}, '${patient.patient_name}')" 
                       ${!permissions.can_view_records ? 'disabled title="No permission to view medical records"' : ''}>
-                📁 View Medical Records
+                 View Medical Records
               </button>
               <button class="btn btn-info" onclick="bookAppointmentForPatient(${patient.patient_id}, '${patient.patient_name}')" 
                       ${!permissions.can_book_appointments ? 'disabled title="No permission to book appointments"' : ''}>
-                📝 Book Appointment
+                 Book Appointment
               </button>
             </div>
           `;
@@ -649,7 +649,7 @@
               <p>Healthcare Consultation</p>
             </div>
             <button class="btn btn-warning" onclick="openChatRoom(${room.id}, '${room.name || 'Chat Room'}')">
-              💬 Open Chat
+               Open Chat
             </button>
           `;
           
@@ -719,57 +719,64 @@
 
     // View medical records (vitals) for a patient
     async function viewVitals(patientId, patientName) {
-      const modal = document.getElementById('vitalsModal');
-      const title = document.getElementById('vitalsModalTitle');
-      const content = document.getElementById('vitalsContent');
-      
-      title.textContent = `${patientName}'s Medical Records`;
-      content.innerHTML = '<div class="loading-state">Loading medical records...</div>';
-      
-      modal.style.display = 'block';
-      
-      try {
-        const res = await fetch(`${API_BASE_URL}/family/patient-vitals/${patientId}`, {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        const vitals = await res.json();
-        content.innerHTML = "";
-        
-        if (!vitals || vitals.length === 0) {
-          content.innerHTML = '<div class="empty-state"><h4>No Medical Records Found</h4><p>No medical records have been recorded for this patient yet.</p></div>';
-          return;
-        }
-        
-        const vitalsList = Array.isArray(vitals) ? vitals : [vitals];
-        
-        vitalsList.forEach(vital => {
-          const div = document.createElement("div");
-          div.className = "vital-item";
-          
-          const date = vital.date || vital.timestamp || new Date().toISOString();
-          const bloodPressure = vital.bp || vital.blood_pressure || "Not recorded";
-          const heartRate = vital.heart_rate || vital.pulse || "Not recorded";
-          const temperature = vital.temperature || "Not recorded";
-          
-          div.innerHTML = `
-            <div class="vital-date">${formatDate(date)}</div>
-            ${bloodPressure !== "Not recorded" ? `<div class="vital-value"><strong>Blood Pressure:</strong> ${bloodPressure}</div>` : ''}
-            ${heartRate !== "Not recorded" ? `<div class="vital-value"><strong>Heart Rate:</strong> ${heartRate} bpm</div>` : ''}
-            ${temperature !== "Not recorded" ? `<div class="vital-value"><strong>Temperature:</strong> ${temperature}°F</div>` : ''}
-          `;
-          content.appendChild(div);
-        });
-        
-      } catch (error) {
-        console.error("Error loading medical records:", error);
-        content.innerHTML = `<div class="error-state"><h4>Error Loading Medical Records</h4><p>${error.message}</p></div>`;
+  const modal = document.getElementById('vitalsModal');
+  const title = document.getElementById('vitalsModalTitle');
+  const content = document.getElementById('vitalsContent');
+  const token = sessionStorage.getItem('token');
+
+  title.textContent = `${patientName}'s Medical Records`;
+  content.innerHTML = '<div class="loading-state">Loading medical records...</div>';
+  modal.style.display = 'block';
+
+  try {
+    const res = await fetch(
+      `${API_CONFIG.getApiBaseUrl()}${API_CONFIG.endpoints.FAMILY_VITALS}/${patientId}`, {
+        headers: { "Authorization": "Bearer " + token }
       }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+    const vitals = await res.json();
+    content.innerHTML = "";
+
+    if (!vitals.length) {
+      content.innerHTML = `
+        <div class="empty-state">
+          <h4>No Medical Records Found</h4>
+          <p>No medical records have been recorded for this patient yet.</p>
+        </div>`;
+      return;
     }
+
+    vitals.forEach(vital => {
+      const div = document.createElement("div");
+      div.className = "vital-item";
+
+      const date = new Date(vital.timestamp).toLocaleString();
+      const bp = vital.bp ?? "Not recorded";
+      const hr = vital.heart_rate ?? "Not recorded";
+      const temp = vital.temperature ?? "Not recorded";
+      const notes = vital.notes ?? "No notes";
+
+      div.innerHTML = `
+        <div class="vital-date"><strong>Recorded At:</strong> ${date}</div>
+        <div class="vital-value"><strong>Blood Pressure:</strong> ${bp}</div>
+        <div class="vital-value"><strong>Heart Rate:</strong> ${hr} bpm</div>
+        <div class="vital-value"><strong>Temperature:</strong> ${temp}°F</div>
+        <div class="vital-value"><strong>Notes:</strong> ${notes}</div>
+      `;
+      content.appendChild(div);
+    });
+  } catch (error) {
+    console.error("Error loading medical records:", error);
+    content.innerHTML = `
+      <div class="error-state">
+        <h4>Error Loading Medical Records</h4>
+        <p>${error.message}</p>
+      </div>`;
+  }
+}
+
 
     // Book appointment for patient (redirect to create_appointment.html)
     function bookAppointmentForPatient(patientId, patientName) {

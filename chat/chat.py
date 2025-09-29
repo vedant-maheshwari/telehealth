@@ -26,49 +26,99 @@ def _decode_ws_token(ws_token: str):
     except JWTError as e:
         raise HTTPException(status_code=401, detail="Invalid ws token")
 
-@router.post("/create", response_model=schemas.ChatRoomOut)
-def create_chat_room(payload: schemas.CreateChatRoomIn, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
-    # Only doctors can create rooms
-    if current_user.role != models.UserRoles.DOCTOR:
-        raise HTTPException(status_code=403, detail="Only doctors can create chat rooms")
+# @router.post("/create", response_model=schemas.ChatRoomOut)
+# def create_chat_room(payload: schemas.CreateChatRoomIn, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+#     # Only doctors can create rooms
+#     if current_user.role != models.UserRoles.DOCTOR:
+#         raise HTTPException(status_code=403, detail="Only doctors can create chat rooms")
 
-    # Determine patient_id from participant list
-    patient_id = None
-    for uid in payload.participant_ids:
-        user = db.query(models.User).filter(models.User.id == uid).first()
-        if user and user.role == models.UserRoles.PATIENT:
-            patient_id = uid
-            break
+#     # Determine patient_id from participant list
+#     patient_id = None
+#     for uid in payload.participant_ids:
+#         user = db.query(models.User).filter(models.User.id == uid).first()
+#         if user and user.role == models.UserRoles.PATIENT:
+#             patient_id = uid
+#             break
 
-    # create room with patient_id and doctor_id
-    room = models.ChatRoom(
-        name=payload.name,
-        created_by=current_user.id,
-        patient_id=patient_id,  # Set patient_id
-        doctor_id=current_user.id  # Set doctor_id
+#     # create room with patient_id and doctor_id
+#     room = models.ChatRoom(
+#         name=payload.name,
+#         created_by=current_user.id,
+#         patient_id=patient_id,  # Set patient_id
+#         doctor_id=current_user.id  # Set doctor_id
+#     )
+#     db.add(room)
+#     db.commit()
+#     db.refresh(room)
+
+#     # add participants (include doctor)
+#     participant_ids = set(payload.participant_ids)
+#     participant_ids.add(current_user.id)
+
+#     participants = []
+#     for uid in participant_ids:
+#         user_obj = db.query(models.User).filter(models.User.id == uid).first()
+#         if not user_obj:
+#             # skip if user doesn't exist
+#             continue
+#         p = models.ChatParticipant(chat_id=room.id, user_id=uid)
+#         participants.append(p)
+
+#     if participants:
+#         db.add_all(participants)
+#         db.commit()
+
+#     return room
+
+@router.post('/create')
+def create_chat_room_with_emails(
+    chat_data: schemas.ChatCreateWithEmails,
+    db: Session = Depends(get_db),
+    current_user = Depends(auth.check_doctor)
+):
+    # Create chat room
+    chat_room = models.ChatRoom(
+        name=chat_data.name,
+        created_by=current_user.id
     )
-    db.add(room)
+    db.add(chat_room)
+    db.flush()  # Get the ID
+    
+    # Add creator as participant
+    creator_participant = models.ChatParticipant(
+        chat_id=chat_room.id,
+        user_id=current_user.id
+    )
+    db.add(creator_participant)
+    
+    # Add participants by email
+    added_participants = []
+    for email in chat_data.participant_emails:
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if user:
+            # Check if already a participant
+            existing = db.query(models.ChatParticipant).filter(
+                models.ChatParticipant.chat_id == chat_room.id,
+                models.ChatParticipant.user_id == user.id
+            ).first()
+            
+            if not existing:
+                participant = models.ChatParticipant(
+                    chat_id=chat_room.id,
+                    user_id=user.id
+                )
+                db.add(participant)
+                added_participants.append(user.email)
+    
     db.commit()
-    db.refresh(room)
-
-    # add participants (include doctor)
-    participant_ids = set(payload.participant_ids)
-    participant_ids.add(current_user.id)
-
-    participants = []
-    for uid in participant_ids:
-        user_obj = db.query(models.User).filter(models.User.id == uid).first()
-        if not user_obj:
-            # skip if user doesn't exist
-            continue
-        p = models.ChatParticipant(chat_id=room.id, user_id=uid)
-        participants.append(p)
-
-    if participants:
-        db.add_all(participants)
-        db.commit()
-
-    return room
+    db.refresh(chat_room)
+    
+    return {
+        "id": chat_room.id,
+        "name": chat_room.name,
+        "created_by": current_user.id,
+        "participants_added": added_participants
+    }
 
 # Update your existing /chats/my endpoint
 @router.get('/my')
