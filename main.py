@@ -22,12 +22,15 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 import colorlog
 import traceback
-from datetime import datetime, date, time
+from datetime import datetime, date
+import time
 import redis.asyncio as redis
 import asyncio
 from contextlib import asynccontextmanager
 import os
 import socket
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 
 
@@ -147,6 +150,108 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+os.makedirs("logs", exist_ok=True)
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app):
+        super().__init__(app)
+        # Paths to exclude from logging (admin dashboard polling)
+        self.excluded_paths = [
+            "/admin/logs/recent",
+            "/admin/analytics/overview", 
+            "/favicon.ico",
+            "/apple-touch-icon.png",
+            "/apple-touch-icon-precomposed.png"
+        ]
+        
+        # Rate limiting for specific endpoints
+        self.rate_limited = {}
+        self.rate_limit_seconds = 30  # Only log once per 30 seconds for admin endpoints
+    
+    def should_log_request(self, request: Request) -> bool:
+        """Determine if request should be logged"""
+        path = str(request.url.path)
+        
+        # Skip excluded paths completely
+        if any(excluded in path for excluded in self.excluded_paths):
+            return False
+        
+        # Rate limit admin endpoints
+        if path.startswith("/admin/"):
+            current_time = time.time()
+            last_logged = self.rate_limited.get(path, 0)
+            
+            if current_time - last_logged < self.rate_limit_seconds:
+                return False  # Skip logging
+            else:
+                self.rate_limited[path] = current_time
+                return True
+        
+        return True
+    
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        # Get client IP address
+        client_host = request.client.host if request.client else "unknown"
+        client_port = request.client.port if request.client else 0
+        
+        # Check forwarded headers for real IP (useful behind proxy/load balancer)
+        real_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        if real_ip:
+            client_host = real_ip
+        elif request.headers.get("X-Real-IP"):
+            client_host = request.headers.get("X-Real-IP")
+        
+        should_log = self.should_log_request(request)
+        
+        response = await call_next(request)
+        
+        if should_log:
+            # Calculate processing time
+            process_time = time.time() - start_time
+            
+            # Create log entry in the desired format
+            timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            status_text = self.get_status_text(response.status_code)
+            
+            log_entry = f'INFO:     {client_host}:{client_port} - "{request.method} {request.url.path} HTTP/1.1" {response.status_code} {status_text}'
+            
+            # Add query parameters if they exist
+            if request.url.query:
+                log_entry = f'INFO:     {client_host}:{client_port} - "{request.method} {request.url.path}?{request.url.query} HTTP/1.1" {response.status_code} {status_text}'
+            
+            try:
+                with open("logs/telehealth.log", "a") as f:
+                    f.write(log_entry + '\n')
+            except Exception as e:
+                print(f"Failed to write log: {e}")
+        
+        return response
+    
+    def get_status_text(self, status_code: int) -> str:
+        """Get HTTP status text"""
+        status_texts = {
+            200: "OK",
+            201: "Created", 
+            204: "No Content",
+            301: "Moved Permanently",
+            302: "Found",
+            307: "Temporary Redirect",
+            400: "Bad Request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            404: "Not Found",
+            405: "Method Not Allowed",
+            500: "Internal Server Error",
+            502: "Bad Gateway",
+            503: "Service Unavailable"
+        }
+        return status_texts.get(status_code, f"HTTP {status_code}")
+
+# Add the middleware to your app
+app.add_middleware(RequestLoggingMiddleware)
 
 
 app.include_router(family_routes)

@@ -19,7 +19,16 @@ const API_CONFIG = {
     CHATS_MY: '/chats/my',
     ADD_VITAL: '/add_vital',
     GET_VITALS: '/get_vital',
-    FAMILY_VITALS: '/family/patient-records'
+    FAMILY_VITALS: '/family/patient-records',
+    ADMIN_USERS: '/admin/users',
+    ADMIN_APPOINTMENTS: '/admin/appointments', 
+    ADMIN_CHATS: '/admin/chats',
+    ADMIN_ANALYTICS: '/admin/analytics/dashboard',
+    ADMIN_HEALTH: '/admin/system/health',
+    ADMIN_LOGS: '/admin/logs',
+    ADMIN_LOGS: '/admin/logs/recent',
+    ADMIN_ANALYTICS: '/admin/analytics/overview', 
+    ADMIN_SETTINGS: '/admin/settings'
   }
 };
 

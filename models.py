@@ -58,12 +58,15 @@ class User(Base):
     availability_settings: Mapped[List["DoctorAvailability"]] = relationship(back_populates="doctor")
 
 
+# models.py - ADD CASCADE DELETES
+
+# Update FamilyConnections model
 class FamilyConnections(Base):
     __tablename__ = 'family_connections'
 
     id : Mapped[int] = mapped_column(primary_key=True)
-    patient_id : Mapped[int] = mapped_column(ForeignKey("users.id"))
-    family_member_id : Mapped[int] = mapped_column(ForeignKey("users.id"))
+    patient_id : Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    family_member_id : Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     relationship_type : Mapped[str] = mapped_column(Enum(RelationshipType), nullable=False)
 
     patient : Mapped["User"] = relationship(back_populates='family_connections', foreign_keys=[patient_id])
@@ -74,12 +77,13 @@ class FamilyConnections(Base):
     )
 
 
+# Update FamilyInvitations model
 class FamilyInvitations(Base):
     __tablename__ = 'family_invitations'
 
     id : Mapped[int] = mapped_column(primary_key=True)
-    inviter_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
-    invitee_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
+    inviter_id : Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
+    invitee_id : Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
     relationship_type : Mapped[str] = mapped_column(Enum(RelationshipType), nullable=False)
     token : Mapped[str] = mapped_column(String)
     status : Mapped[str] = mapped_column(Enum(Status))
@@ -88,36 +92,39 @@ class FamilyInvitations(Base):
     invitee : Mapped["User"] = relationship(back_populates='received_invitations', foreign_keys=[invitee_id])
 
 
+# Update FamilyPermissions model
 class FamilyPermissions(Base):
     __tablename__ = 'family_permissions'
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    family_member_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    family_member_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
     permissions: Mapped[List[str]] = mapped_column(JSON, default=list)
     
     # Relationship
     family_member: Mapped["User"] = relationship("User", foreign_keys=[family_member_id])
 
 
-
+# Update Appointments model
 class Appointments(Base):
     __tablename__ = 'appointments'
 
     id : Mapped[int] = mapped_column(primary_key=True)
-    patient_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
-    doctor_id : Mapped[int] = mapped_column(ForeignKey('users.id'))
+    patient_id : Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
+    doctor_id : Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
     date_time : Mapped[DateTime] = mapped_column(DateTime(timezone=True))
     status : Mapped[str] = mapped_column(Enum(Status), nullable=False)
 
     patient : Mapped['User'] = relationship(back_populates='patient_appointments', foreign_keys=[patient_id])
     doctor : Mapped['User'] = relationship(back_populates='doctor_appointments', foreign_keys=[doctor_id])
 
+
+# Update Vitals model
 class Vitals(Base):
     __tablename__ = 'vitals'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    patient_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    doctor_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    patient_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
+    doctor_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
     
     # Multiple vital measurements (all optional)
     bp: Mapped[int] = mapped_column(nullable=True)  # Systolic Blood Pressure
@@ -133,6 +140,50 @@ class Vitals(Base):
     doctor: Mapped['User'] = relationship(back_populates='doctor_for_patient', foreign_keys=[doctor_id])
 
 
+# Update ChatParticipant model
+class ChatParticipant(Base):
+    __tablename__ = "chat_participants"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    chat_id: Mapped[int] = mapped_column(ForeignKey("chat_rooms.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+
+    chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="participants")
+    __table_args__ = (
+        UniqueConstraint('chat_id', 'user_id', name='unique_chat_participant'),
+    )
+
+
+# Update ChatMessage model
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    chat_id: Mapped[int] = mapped_column(ForeignKey("chat_rooms.id", ondelete="CASCADE"))
+    sender_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="messages")
+    # sender relationship optional:
+    sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id])
+
+
+# Update DoctorAvailability model
+class DoctorAvailability(Base):
+    __tablename__ = 'doctor_availability'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    doctor_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
+    day_of_week: Mapped[int] = mapped_column()  # 0-6 (Mon-Sun)
+    start_time: Mapped[time] = mapped_column()
+    end_time: Mapped[time] = mapped_column()
+    appointment_duration: Mapped[int] = mapped_column()  # minutes
+    break_start: Mapped[time] = mapped_column(nullable=True)
+    break_end: Mapped[time] = mapped_column(nullable=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    
+    doctor: Mapped["User"] = relationship(back_populates="availability_settings")
+
+    
 class ChatRoom(Base):
     __tablename__ = "chat_rooms"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -150,46 +201,3 @@ class ChatRoom(Base):
     # Existing relationships
     participants: Mapped[List["ChatParticipant"]] = relationship("ChatParticipant", back_populates="chat_room", cascade="all, delete-orphan")
     messages: Mapped[List["ChatMessage"]] = relationship("ChatMessage", back_populates="chat_room", cascade="all, delete-orphan")
-
-
-class ChatParticipant(Base):
-    __tablename__ = "chat_participants"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    chat_id: Mapped[int] = mapped_column(ForeignKey("chat_rooms.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-
-    chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="participants")
-    __table_args__ = (
-        UniqueConstraint('chat_id', 'user_id', name='unique_chat_participant'),
-    )
-    # no backref to user required here; you can query users via models.User
-
-
-class ChatMessage(Base):
-    __tablename__ = "chat_messages"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    chat_id: Mapped[int] = mapped_column(ForeignKey("chat_rooms.id"))
-    sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-
-    chat_room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="messages")
-    # sender relationship optional:
-    sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id])
-
-
-class DoctorAvailability(Base):
-    __tablename__ = 'doctor_availability'
-    
-    id: Mapped[int] = mapped_column(primary_key=True)
-    doctor_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    day_of_week: Mapped[int] = mapped_column()  # 0-6 (Mon-Sun)
-    start_time: Mapped[time] = mapped_column()
-    end_time: Mapped[time] = mapped_column()
-    appointment_duration: Mapped[int] = mapped_column()  # minutes
-    break_start: Mapped[time] = mapped_column(nullable=True)
-    break_end: Mapped[time] = mapped_column(nullable=True)
-    is_active: Mapped[bool] = mapped_column(default=True)
-    
-    doctor: Mapped["User"] = relationship(back_populates="availability_settings")
-    

@@ -148,8 +148,11 @@
                     window.location.href = "doctor_dashboard.html";
                 } else if (data.role === "patient") {
                     window.location.href = "patient_dashboard.html";
-                } else {
+                } else if (data.role === "family") {
                     window.location.href = "family_dashboard.html"; // default fallback
+                }
+                else{
+                    window.location.href = "admin_dashboard.html";
                 }
 
                 // // Redirect to dashboard
