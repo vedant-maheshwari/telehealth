@@ -1,4 +1,4 @@
-# 🏥 Telehealth Platform - Comprehensive Healthcare Management System
+# Telehealth Platform - Comprehensive Healthcare Management System
 
 [![Python](https://img.shields.io/badge/python-v3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.68+-green.svg)](https://fastapi.tiangolo.com/)
@@ -9,7 +9,7 @@
 
 A modern, full-stack telehealth platform built with FastAPI and vanilla JavaScript, designed to provide comprehensive healthcare management with real-time features, secure patient data handling, and intuitive user interfaces for patients, doctors, family members, and administrators.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#-features)
 - [Architecture](#-architecture)
@@ -25,7 +25,7 @@ A modern, full-stack telehealth platform built with FastAPI and vanilla JavaScri
 - [Contributing](#-contributing)
 - [License](#-license)
 
-## 🚀 Features
+## Features
 
 ### 👥 **Multi-Role User Management**
 - **Patients**: Book appointments, view vitals, manage health records
@@ -33,33 +33,33 @@ A modern, full-stack telehealth platform built with FastAPI and vanilla JavaScri
 - **Family Members**: Monitor patient health with permission-based access
 - **Administrators**: Comprehensive system management and analytics
 
-### 🏥 **Core Healthcare Features**
+### **Core Healthcare Features**
 - **Appointment Scheduling**: Dynamic booking with doctor availability
 - **Vital Records Management**: Comprehensive health data tracking
 - **Real-time Chat System**: Secure patient-doctor communication
 - **Family Connections**: Permission-based family member access
 - **Medical History**: Complete patient health journey tracking
 
-### 📊 **Advanced Analytics**
+### **Advanced Analytics**
 - **Admin Dashboard**: Real-time system monitoring and user analytics
 - **Health Insights**: Vital trend analysis and health reports
 - **System Logs**: Comprehensive audit trails and monitoring
 - **Performance Metrics**: Application performance and usage statistics
 
-### 🔐 **Security & Compliance**
+### **Security & Compliance**
 - **JWT Authentication**: Secure token-based authentication
 - **Role-based Access Control**: Granular permission management
 - **Data Encryption**: Secure patient data handling
 - **Audit Trails**: Complete activity logging for compliance
 
-### 🌐 **Modern Technology Stack**
+### **Modern Technology Stack**
 - **Backend**: FastAPI with async/await support
 - **Database**: PostgreSQL with SQLAlchemy ORM
 - **Caching**: Redis for session management and real-time features
 - **Frontend**: Vanilla JavaScript with modern ES6+ features
 - **Real-time**: WebSocket support for live updates
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -82,7 +82,7 @@ A modern, full-stack telehealth platform built with FastAPI and vanilla JavaScri
                        └─────────────────┘
 ```
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.11+
@@ -130,7 +130,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - **Doctor Portal**: http://localhost:8000/frontend/doctor_dashboard.html
 - **Admin Dashboard**: http://localhost:8000/frontend/admin_dashboard.html
 
-## 🛠️ Installation
+## Installation
 
 ### Development Environment
 
@@ -184,7 +184,7 @@ EOF
 
 See [Deployment Section](#-deployment) for detailed production setup instructions.
 
-## 📚 API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 
@@ -576,7 +576,7 @@ Get recent system logs (admin only).
 }
 ```
 
-## 🎨 Frontend Documentation
+## Frontend Documentation
 
 ### Application Structure
 
@@ -642,7 +642,7 @@ const API_CONFIG = {
 4. **Token Validation**: All API calls include Authorization headers
 5. **Session Management**: Automatic logout on token expiration
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Core Tables
 
@@ -767,7 +767,7 @@ Chat_Rooms (1) ←→ (M) Chat_Participants
 5. **Input Validation**: Pydantic models for request validation
 6. **SQL Injection Protection**: SQLAlchemy ORM with parameterized queries
 
-## 🔄 Real-time Features
+## Real-time Features
 
 ### WebSocket Integration
 
@@ -797,7 +797,7 @@ redis_client.setex(f"appointment_hold:{slot_id}", 300, user_id)
 redis_client.lpush(f"chat:{chat_id}", json.dumps(message))
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Docker Deployment
 
@@ -908,7 +908,7 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Application Settings
 
@@ -968,7 +968,7 @@ logging.basicConfig(
 )
 ```
 
-## 🤝 Contributing
+## Contributing
 
 ### Development Guidelines
 
@@ -1026,25 +1026,16 @@ Use the built-in FastAPI documentation for testing:
 3. **Connection Pooling**: Configure appropriate database connection pools
 4. **Query Optimization**: Use SQLAlchemy's lazy loading and eager loading appropriately
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
+##  Support
 
 For support and questions:
 
-- **Email**: vedant.maheshwari@example.com
+- **Email**: vedantmaheshwari23@gmail.com
 - **GitHub Issues**: [Create an issue](https://github.com/vedant-maheshwari/telehealth/issues)
-- **Documentation**: [API Documentation](http://localhost:8000/docs)
-
-## 🙏 Acknowledgments
-
-- FastAPI for the excellent async web framework
-- SQLAlchemy for robust ORM capabilities  
-- PostgreSQL for reliable data storage
-- Redis for caching and real-time features
-- The open-source community for inspiration and tools
 
 ---
 
