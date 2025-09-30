@@ -30,9 +30,7 @@ from contextlib import asynccontextmanager
 import os
 import socket
 from starlette.middleware.base import BaseHTTPMiddleware
-
-
-
+import uvicorn
 
 async def listen_for_expired_keys():
     pubsub = redis_client.pubsub()
@@ -61,7 +59,6 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
 
-
 HOLD_TTL = 5 * 60  # 5 minutes in seconds
 
 log_colors = {
@@ -72,14 +69,10 @@ log_colors = {
     'CRITICAL': 'bold_red'
 }
 
-
 logging.basicConfig(
     level=logging.INFO,
-    # format="[%(asctime)s] (line no %(lineno)s) : %(levelname)s %(message)s",
-    # datefmt="%d-%m-%Y %H:%M:%S",
     handlers=[colorlog.StreamHandler()]
 )
-
 
 logging.getLogger().handlers[0].setFormatter(
     colorlog.ColoredFormatter(
@@ -93,20 +86,10 @@ Base.metadata.create_all(engine)
 
 app = FastAPI(lifespan=lifespan)
 
+# Mount static files with proper HTTPS handling
 app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
 
-# api_router = APIRouter()
-
-# redis_client = redis.Redis(host='localhost', port=6379, db=0)
-
-# Try resolving "redis" inside Docker
-# try:
-#     socket.gethostbyname("redis")
-#     default_url = "redis://redis:6379/0"
-# except socket.gaierror:
-#     default_url = "redis://localhost:6379/0"
-
-# redis_client = redis.from_url(default_url)
+# Redis configuration
 REDIS_URL = os.getenv("REDIS_URL")
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
@@ -114,9 +97,6 @@ redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 async def global_exception_handler(request : Request, exc : Exception):
     # Get only the last traceback entry (the cause of the error)
     tb = traceback.TracebackException.from_exception(exc)
-    # last_frame = "".join(tb.format_exception_only())
-
-    # Or if you also want the file + line:
     formatted = "".join(tb.format())  # full traceback (many frames)
     last_part = formatted.strip().splitlines()[-5:]  # last 3 lines usually enough
 
@@ -129,22 +109,15 @@ async def global_exception_handler(request : Request, exc : Exception):
         }
     )
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # for development, allow all. Later restrict to your frontend domain
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
+# UPDATED CORS CONFIGURATION - Prioritize HTTPS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
+        "https://telehealthapp.azurewebsites.net",  # Your Azure domain (HTTPS first)
+        "https://*.azurewebsites.net",  # Allow all Azure subdomains (HTTPS)
+        "http://localhost:3000",  # Local development
         "http://localhost:8080", 
         "http://127.0.0.1:8000",
-        "https://telehealth-webapp-123.azurewebsites.net",  # Add your Azure domain
-        "https://*.azurewebsites.net"  # Allow all Azure subdomains
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -153,6 +126,7 @@ app.add_middleware(
 
 os.makedirs("logs", exist_ok=True)
 
+# UPDATED REQUEST LOGGING MIDDLEWARE - Handle proxy headers
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
@@ -193,11 +167,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
         
-        # Get client IP address
+        # Get client IP address with proper proxy header handling
         client_host = request.client.host if request.client else "unknown"
         client_port = request.client.port if request.client else 0
         
-        # Check forwarded headers for real IP (useful behind proxy/load balancer)
+        # Check forwarded headers for real IP (Azure App Service proxy headers)
         real_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
         if real_ip:
             client_host = real_ip
@@ -208,6 +182,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         
         response = await call_next(request)
         
+        # Add security headers to prevent mixed content
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        
         if should_log:
             # Calculate processing time
             process_time = time.time() - start_time
@@ -216,11 +196,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             status_text = self.get_status_text(response.status_code)
             
-            log_entry = f'INFO:     {client_host}:{client_port} - "{request.method} {request.url.path} HTTP/1.1" {response.status_code} {status_text}'
+            # Determine if request was made over HTTPS (check forwarded proto)
+            protocol = "HTTPS" if request.headers.get("X-Forwarded-Proto") == "https" else "HTTP"
+            
+            log_entry = f'INFO:     {client_host}:{client_port} - "{request.method} {request.url.path} {protocol}/1.1" {response.status_code} {status_text}'
             
             # Add query parameters if they exist
             if request.url.query:
-                log_entry = f'INFO:     {client_host}:{client_port} - "{request.method} {request.url.path}?{request.url.query} HTTP/1.1" {response.status_code} {status_text}'
+                log_entry = f'INFO:     {client_host}:{client_port} - "{request.method} {request.url.path}?{request.url.query} {protocol}/1.1" {response.status_code} {status_text}'
             
             try:
                 with open("logs/telehealth.log", "a") as f:
@@ -253,14 +236,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 # Add the middleware to your app
 app.add_middleware(RequestLoggingMiddleware)
 
-
+# Include routers
 app.include_router(family_routes)
 app.include_router(chat_router)
 app.include_router(chat_auth)
 app.include_router(admin_router)
 app.include_router(realtime_router)
-
-# app.include_router(api_router, prefix="/api")
 
 def get_db():
     db = SessionLocal()
@@ -269,43 +250,41 @@ def get_db():
     finally:
         db.close()
 
-
+# UPDATED ROOT REDIRECT - Use HTTPS when possible
 @app.get("/")
-async def root():
-    return RedirectResponse(url="/frontend/")
+async def root(request: Request):
+    # Check if request came through HTTPS proxy
+    if request.headers.get("X-Forwarded-Proto") == "https":
+        # If HTTPS, redirect to HTTPS frontend
+        base_url = str(request.base_url).replace("http://", "https://")
+        return RedirectResponse(url=f"{base_url}frontend/")
+    else:
+        # Fallback for local development
+        return RedirectResponse(url="/frontend/")
 
 @app.post('/register_patient', response_model=schemas.UsersOut)
 def create_patient(patient : schemas.InsertPatient, db : session = Depends(get_db)):
-
     if crud.check_user_by_email(db, patient.email):
         raise HTTPException(status_code=400, detail='patient already exists')
     
     patient.password = utils.hash_password(patient.password)
-
     return crud.insert_patient(db, patient)
-
 
 @app.post('/register_doctor', response_model=schemas.UsersOut)
 def create_doctor(doctor : schemas.InsertDoctor, db : session = Depends(get_db)):
-
     if crud.check_user_by_email(db, doctor.email):
         raise HTTPException(status_code=400, detail='doctor already exists')
 
     doctor.password = utils.hash_password(doctor.password)
-
     return crud.insert_doctor(db, doctor)
-
 
 @app.post('/register_family', response_model=schemas.UsersOut)
 def create_family(family : schemas.InsertFamily, db : session = Depends(get_db)):
-
     if crud.check_user_by_email(db, family.email):
         HTTPException(status_code=400, detail='family member already exists')
 
     family.password = utils.hash_password(family.password)
-
     return crud.insert_family(db, family)
-
 
 @app.post('/token')  # This matches your tokenUrl
 def login_for_swagger(form_data: OAuth2PasswordRequestForm = Depends(), db: session = Depends(get_db)):
@@ -320,11 +299,9 @@ def login_for_swagger(form_data: OAuth2PasswordRequestForm = Depends(), db: sess
     )
     return {'access_token' : access_token, 'token_type' : 'bearer', 'role' : user.role, 'user_id' : user.id}
 
-
 @app.get('/user/me')
 def read_users_me(current_user = Depends(auth.get_current_user)):
     return current_user
-
 
 @app.get('/all_doctors', response_model=List[schemas.UsersOut])
 def all_users(db : session = Depends(get_db)):
@@ -470,61 +447,6 @@ async def reserve_slot(appointment : schemas.BookAppointment, user_id: int):
 
     return {"message": "Slot reserved", "expires_in": HOLD_TTL}
 
-# @app.post('/confirm_slot')
-# async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Query(...), db : session = Depends(get_db)):
-    
-#     slot_reserve_key = crud.make_slot_key(appointment.doctor_id, appointment.appointment_date)
-#     holder = await redis_client.get(slot_reserve_key)
-
-#     if holder is None:
-#         raise HTTPException(410, "Reservation expired or not found")
-#     if int(holder.decode()) != user_id:
-#         raise HTTPException(403, "You do not hold this reservation")
-    
-#     booking = crud.book_appointment(db, appointment, user_id)
-
-#     if not booking:
-#         HTTPException(status_code=409, detail='booking cannot be processed')
-
-#     await redis_client.delete(slot_reserve_key)
-
-#     await redis_client.aclose()
-
-#     return {"message": "Booking confirmed", "slot_time": appointment.appointment_date}
-
-# @app.post('/confirm_slot')
-# async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Query(...), db : session = Depends(get_db)):
-    
-#     slot_reserve_key = crud.make_slot_key(appointment.doctor_id, appointment.appointment_date)
-#     holder = await redis_client.get(slot_reserve_key)
-
-#     if holder is None:
-#         raise HTTPException(410, "Reservation expired or not found")
-    
-#     # Handle both bytes and string responses
-#     try:
-#         if isinstance(holder, bytes):
-#             holder_value = int(holder.decode())
-#         else:
-#             holder_value = int(holder)
-#     except (ValueError, AttributeError) as e:
-#         raise HTTPException(500, f"Invalid reservation data: {e}")
-    
-#     if holder_value != user_id:
-#         raise HTTPException(403, "You do not hold this reservation")
-    
-#     booking = crud.book_appointment(db, appointment, user_id)
-
-#     if not booking:
-#         raise HTTPException(status_code=409, detail='booking cannot be processed')
-
-#     await redis_client.delete(slot_reserve_key)
-
-#     await redis_client.aclose()
-
-#     return {"message": "Booking confirmed", "slot_time": appointment.appointment_date}
-
-
 @app.post('/confirm_slot')
 async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Query(...), db : session = Depends(get_db)):
     
@@ -553,11 +475,7 @@ async def confirm_slot(appointment : schemas.BookAppointment, user_id: int = Que
 
     await redis_client.delete(slot_reserve_key)
     
-    # Remove this line - don't close the connection
-    # await redis_client.aclose()
-
     return {"message": "Booking confirmed", "slot_time": appointment.appointment_date}
-
 
 @app.post("/cancel_slot")
 async def cancel_slot(doctor_id: int, slot_time: datetime, user_id: int):
@@ -581,7 +499,6 @@ def get_patient_appointments(
     
     return appointments
 
-
 @app.get("/redis_test")
 async def redis_test():
     try:
@@ -589,7 +506,6 @@ async def redis_test():
         return {"status": "success", "message": "Redis connection successful", "pong": pong}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
 
 @app.get('/patient/appointments/detailed')
 def get_patient_appointments_detailed(
@@ -688,3 +604,12 @@ def reschedule_appointment(
         }
     }
 
+# ADDED: Uvicorn startup configuration with proxy headers support
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),
+        proxy_headers=True,  # Enable proxy header support for Azure
+        forwarded_allow_ips="*"  # Trust all forwarded IPs (safe in Azure App Service)
+    )

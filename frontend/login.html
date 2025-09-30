@@ -103,12 +103,7 @@
     </div>
     <script src="config.js"></script>
     <script>
-        const getApiBaseUrl = () => {
-        if (window.location.hostname.includes('azurewebsites.net')) {
-            return "https://telehealth-webapp-123.azurewebsites.net";
-        }
-        return "http://localhost:8000";
-        };
+        
 
         const API_BASE_URL = API_CONFIG.getApiBaseUrl();
         

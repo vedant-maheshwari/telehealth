@@ -421,3 +421,51 @@ INFO:     127.0.0.1:50861 - "GET /user/me HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50854 - "PUT /family/permissions/2 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50860 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50861 - "GET /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51197 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:51198 - "GET /frontend/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51197 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51217 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:51221 - "GET /frontend/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51217 - "GET /frontend/config.js HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:51239 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:51239 - "GET /frontend/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51243 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51244 - "GET /frontend/patient_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:51243 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51243 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51243 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "OPTIONS /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "OPTIONS /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51245 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "OPTIONS /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "GET /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "OPTIONS /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51255 - "OPTIONS /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51255 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51255 - "OPTIONS /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51255 - "GET /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51260 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51276 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51277 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51278 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51277 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51278 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51277 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51278 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51277 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51278 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51297 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51298 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51299 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51298 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51323 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51323 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51324 - "GET /frontend/login.html HTTP/1.1" 200 OK

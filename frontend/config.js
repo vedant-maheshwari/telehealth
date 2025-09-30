@@ -1,14 +1,14 @@
 const API_CONFIG = {
   getApiBaseUrl: () => {
     if (window.location.hostname.includes('azurewebsites.net')) {
-      return "https://telehealth-webapp-123.azurewebsites.net"; // Update with your deployed backend
+      return "https://telehealthapp.azurewebsites.net"; // Update with your deployed backend
     }
     return "http://localhost:8000";
   },
 
   getApiBaseUrlWithouthttp: () => {
     if (window.location.hostname.includes('azurewebsites.net')) {
-      return "telehealth-webapp-123.azurewebsites.net"; // Update with your deployed backend
+      return "telehealthapp.azurewebsites.net"; // Update with your deployed backend
     }
     return "localhost:8000";
   },

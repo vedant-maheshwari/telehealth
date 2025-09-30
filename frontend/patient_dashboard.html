@@ -737,12 +737,7 @@
   <script src="config.js"></script>
   <script>
     // Constants
-    const getApiBaseUrl = () => {
-      if (window.location.hostname.includes('azurewebsites.net')) {
-        return 'https://telehealth-webapp-123.azurewebsites.net';
-      }
-      return 'http://localhost:8000';
-    };
+  
     const API_BASE_URL = API_CONFIG.getApiBaseUrl();
     console.log('Using API Base URL:', API_BASE_URL);
 
@@ -1018,6 +1013,7 @@
           const temperature = vital.temperature || vital.temp || 'Not recorded';
           const weight = vital.weight || 'Not recorded';
           const height = vital.height || 'Not recorded';
+          const notes = vital.notes || "No notes";
           
           let vitalContent = `<div class="vital-date">${formatDate(date)}</div>`;
           
@@ -1036,7 +1032,9 @@
           if (height !== 'Not recorded') {
             vitalContent += `<div class="vital-value"><strong>Height:</strong> ${height} inches</div>`;
           }
-          
+          if (notes !== 'Not recorded') {
+          vitalContent += `<div class="vital-value"><strong>Notes:</strong> ${notes}</div>`;
+          }
           if (vitalContent === `<div class="vital-date">${formatDate(date)}</div>`) {
             vitalContent += `<div class="vital-value"><em>Vital signs data available</em></div>`;
           }
