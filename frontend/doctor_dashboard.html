@@ -2,84 +2,632 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doctor Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f5f8fc; margin: 0; }
-    header { background: #1976d2; color: #fff; padding: 15px; text-align: center; }
-    .container { padding: 20px; max-width: 800px; margin: auto; }
-    .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    button { padding: 10px 15px; border: none; background: #1976d2; color: white; border-radius: 6px; cursor: pointer; margin: 5px; }
-    button:hover { background: #125aa1; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    /* Modal styles */
-    .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-    .modal-content { background: #fff; margin: 5% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; }
-    .close { float: right; font-size: 20px; cursor: pointer; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+    }
 
-    input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-    .modal-actions { display: flex; justify-content: space-between; margin-top: 15px; }
-    .cancel-btn { background: #aaa; }
-    .cancel-btn:hover { background: #888; }
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-    .chat-card { background: #fff; border-radius: 10px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      background: white;
+      border-radius: 10px;
+      margin: 30px 0 20px 0;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .nav-tab {
+      flex: 1;
+      padding: 18px 20px;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: #666;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .nav-tab:hover {
+      background: #f8f9ff;
+      color: #4285f4;
+    }
+
+    .nav-tab.active {
+      background: #4285f4;
+      color: white;
+      font-weight: 600;
+    }
+
+    .nav-tab:not(:last-child) {
+      border-right: 1px solid #e8eaed;
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+      border: 1px solid #e8eaed;
+    }
+
+    .welcome-card {
+      text-align: center;
+      padding: 32px 24px;
+    }
+
+    .welcome-card h2 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .welcome-card p {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    /* Buttons */
+    .btn, .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin: 5px;
+    }
+
+    .btn:hover, .button:hover {
+      background: #3367d6;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+      background: #545b62;
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-danger {
+      background: #dc3545;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 12px;
+      margin: 0;
+    }
+
+    /* Chat Section */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Chat Landing - List of Rooms */
+    .chat-landing {
+      display: block;
+    }
+
+    .chat-rooms-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .chat-rooms-container .card {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .chat-rooms-container .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      border-color: #4285f4;
+    }
+
+    .chat-rooms-container .card h4 {
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    /* Chat Messages Interface */
+    .chat-messages {
+      display: none;
+      flex-direction: column;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+      height: 600px;
+    }
+
+    .chat-header {
+      background: #4285f4;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .message-bubble {
+      margin-bottom: 15px;
+      max-width: 70%;
+      border-radius: 18px;
+      padding: 12px 16px;
+      word-wrap: break-word;
+    }
+
+    .message-bubble.own {
+      float: right;
+      background: #4285f4;
+      color: white;
+      border-bottom-right-radius: 4px;
+      text-align: right;
+      clear: both;
+    }
+
+    .message-bubble.other {
+      float: left;
+      background: white;
+      color: #333;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      clear: both;
+    }
+
+    .message-content {
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    .message-meta {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .message-bubble.other .message-meta {
+      color: #666;
+    }
+
+    .chat-input-container {
+      display: flex;
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e8eaed;
+      gap: 12px;
+    }
+
+    .message-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e8eaed;
+      border-radius: 25px;
+      font-size: 14px;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      min-height: 20px;
+      max-height: 96px;
+    }
+
+    .message-input:focus {
+      border-color: #4285f4;
+    }
+
+    .send-btn {
+      background: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.3s ease;
+    }
+
+    .send-btn:hover {
+      background: #3367d6;
+    }
+
+    .send-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Create Room Section */
+    .create-room-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #e8eaed;
+    }
+
+    .create-room-card {
+      background: #f8f9fa;
+      padding: 24px;
+      border-radius: 10px;
+      border: 1px solid #e8eaed;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalSlideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .close {
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.3s ease;
+    }
+
+    .close:hover {
+      color: #333;
+    }
+
+    .modal h2 {
+      margin: 0 0 20px 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e8eaed;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4285f4;
+      box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* Loading and State Styles */
+    .loading-state, .empty-state, .error-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .loading-state::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e8eaed;
+      border-radius: 50%;
+      border-top-color: #4285f4;
+      animation: spin 1s ease-in-out infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state h4, .error-state h4 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .error-state {
+      color: #dc3545;
+    }
+
+    .error-state h4 {
+      color: #dc3545;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 15px;
+      }
+      
+      .nav-tabs {
+        flex-wrap: wrap;
+      }
+      
+      .nav-tab {
+        flex: 1 1 auto;
+        min-width: 120px;
+      }
+      
+      .chat-rooms-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .modal-content {
+        margin: 10% auto;
+        width: 95%;
+      }
+      
+      .section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      
+      .chat-actions {
+        width: 100%;
+      }
+      
+      .chat-messages {
+        height: 500px;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h2>Doctor Dashboard</h2>
-  </header>
-  <div class="container">
-    <div class="card">
-      <h3>Welcome, <span id="userName"></span></h3>
-      <p>Email: <span id="userEmail"></span></p>
-    </div>
-
-    <div class="card" id="createSection" style="display:none;">
-      <h3>Chat Management</h3>
-      <button id="createBtn">Create Chat Room</button>
-      <button onclick="viewMyChats()">View My Chats</button>
-    </div>
-
-    <div class="card">
-      <h3>Appointments</h3>
-      <button onclick="location.href='doctor_appointment.html'">View Appointments</button>
-    </div>
-
-    <div class="card">
-      <h3>Patient Vitals</h3>
-      <button onclick="openVitalsModal()">Add Patient Vitals</button>
-    </div>
-
-    <div class="card">
-      <button onclick="logout()">Logout</button>
-    </div>
+  <!-- Header -->
+  <div class="header">
+    <h1>Doctor Dashboard</h1>
   </div>
 
-  <!-- Create Chat Room Modal -->
-  <div id="createChatModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeCreateModal()">&times;</span>
-      <h2>Create Chat Room</h2>
+  <div class="container">
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('profile')">Profile</button>
+      <button class="nav-tab" onclick="showTab('appointments')">Appointments</button>
+      <button class="nav-tab" onclick="showTab('chats')">Chats</button>
+      <button class="nav-tab" onclick="showTab('vitals')">Patient Vitals</button>
+    </div>
 
-      <label>Room Name:</label>
-      <input type="text" id="roomName" placeholder="Enter chat room name">
-
-      <label>Participant Emails (comma separated):</label>
-      <input type="text" id="participantEmails" placeholder="e.g. patient1@email.com, patient2@email.com">
-
-      <div class="modal-actions">
-        <button id="submitRoomBtn">Create</button>
-        <button class="cancel-btn" onclick="closeCreateModal()">Cancel</button>
+    <!-- Profile Tab -->
+    <div id="profile" class="tab-content active">
+      <div class="card welcome-card">
+        <h2>Welcome, <span id="userName">Doctor</span></h2>
+        <p>Email: <span id="userEmail">doctor@example.com</span></p>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
       </div>
     </div>
-  </div>
 
-  <!-- Chat Rooms Modal -->
-  <div id="chatModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>Your Chat Rooms</h2>
-      <div id="chatRooms"></div>
+    <!-- Appointments Tab -->
+    <div id="appointments" class="tab-content">
+      <div class="card">
+        <div class="section-header">
+          <h3 class="section-title">Appointment Management</h3>
+        </div>
+        <p style="margin-bottom: 20px; color: #666;">View and manage your upcoming appointments with patients.</p>
+        <button class="btn" onclick="location.href='doctor_appointment.html'">View Appointments</button>
+      </div>
+    </div>
+
+    <!-- Chats Tab -->
+    <div id="chats" class="tab-content">
+      <!-- Chat Landing - List of Rooms -->
+      <div id="chatLanding" class="chat-landing">
+        <div class="card">
+          <div class="section-header">
+            <h3 class="section-title">Your Chat Rooms</h3>
+            <div class="chat-actions">
+              <button class="btn btn-secondary" onclick="loadChats()">Refresh</button>
+              <button class="btn" onclick="showChatMessages()" id="showRoomsBtn">Show Chat Messages</button>
+              <button class="btn" onclick="showCreateSection()" id="createToggleBtn">Create Room</button>
+            </div>
+          </div>
+          
+          <div id="chatRoomsDiv" class="chat-rooms-container">
+            <div class="loading-state">Loading chat rooms...</div>
+          </div>
+
+          <!-- Create Room Section -->
+          <div id="createSection" class="create-room-section" style="display: none;">
+            <div class="create-room-card">
+              <h3 style="color: #333; margin-bottom: 16px;">Create Chat Room</h3>
+              <div class="form-group">
+                <label class="form-label">Room Name:</label>
+                <input type="text" id="roomName" placeholder="e.g., John's Consultation" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Participant Emails (comma-separated):</label>
+                <input type="text" id="participantEmails" placeholder="e.g., patient@example.com, family@example.com" class="form-input">
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="hideCreateSection()">Cancel</button>
+                <button class="btn" onclick="createRoom()">Create Room</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Chat Messages Interface -->
+      <div id="chatMessages" class="chat-messages">
+        <div class="chat-header">
+          <div id="chatTitle" class="chat-title">Chat Room</div>
+          <button class="back-btn" onclick="showChatLanding()">← Back to Chats</button>
+        </div>
+        <div id="messagesDiv" class="messages-container">
+          <div class="loading-state">Loading messages...</div>
+        </div>
+        <div class="chat-input-container">
+          <textarea id="txt" class="message-input" placeholder="Type your message..." rows="1"></textarea>
+          <button id="sendBtn" class="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patient Vitals Tab -->
+    <div id="vitals" class="tab-content">
+      <div class="card">
+        <div class="section-header">
+          <h3 class="section-title">Patient Vitals Management</h3>
+        </div>
+        <p style="margin-bottom: 20px; color: #666;">Record and track vital signs for your patients.</p>
+        <button class="btn" onclick="openVitalsModal()">Add Patient Vitals</button>
+      </div>
     </div>
   </div>
 
@@ -89,24 +637,34 @@
       <span class="close" onclick="closeVitalsModal()">&times;</span>
       <h2>Add Patient Vitals</h2>
 
-      <label>Patient Email:</label>
-      <input type="email" id="vitalEmail" placeholder="patient@example.com">
+      <div class="form-group">
+        <label class="form-label">Patient Email:</label>
+        <input type="email" class="form-input" id="vitalEmail" placeholder="patient@example.com">
+      </div>
 
-      <label>Blood Pressure (Systolic):</label>
-      <input type="number" id="vitalBP" placeholder="e.g. 120" min="50" max="250">
+      <div class="form-group">
+        <label class="form-label">Blood Pressure (Systolic):</label>
+        <input type="number" class="form-input" id="vitalBP" placeholder="e.g. 120" min="50" max="250">
+      </div>
 
-      <label>Heart Rate (BPM):</label>
-      <input type="number" id="vitalHeartRate" placeholder="e.g. 72" min="30" max="200">
+      <div class="form-group">
+        <label class="form-label">Heart Rate (BPM):</label>
+        <input type="number" class="form-input" id="vitalHeartRate" placeholder="e.g. 72" min="30" max="200">
+      </div>
 
-      <label>Temperature (°F):</label>
-      <input type="number" id="vitalTemp" placeholder="e.g. 98.6" min="90" max="110" step="0.1">
+      <div class="form-group">
+        <label class="form-label">Temperature (°F):</label>
+        <input type="number" class="form-input" id="vitalTemp" placeholder="e.g. 98.6" min="90" max="110" step="0.1">
+      </div>
 
-      <label>Notes (Optional):</label>
-      <input type="text" id="vitalNotes" placeholder="Any additional notes">
+      <div class="form-group">
+        <label class="form-label">Notes (Optional):</label>
+        <input type="text" class="form-input" id="vitalNotes" placeholder="Any additional notes">
+      </div>
 
       <div class="modal-actions">
-        <button id="submitVitalsBtn">Submit Vitals</button>
-        <button class="cancel-btn" onclick="closeVitalsModal()">Cancel</button>
+        <button class="btn btn-secondary" onclick="closeVitalsModal()">Cancel</button>
+        <button class="btn" id="submitVitalsBtn">Submit Vitals</button>
       </div>
     </div>
   </div>
@@ -116,12 +674,60 @@
     const API_BASE_URL = API_CONFIG.getApiBaseUrl();
     console.log('Using API Base URL:', API_BASE_URL);
 
+    const token = sessionStorage.getItem("token") || localStorage.getItem('authToken');
+    const role = sessionStorage.getItem("role") || localStorage.getItem('userRole');
+
+    // Chat variables
+    let currentChatId = null;
+    let wsClient = null;
+    
+    // Get DOM elements
+    const chatLanding = document.getElementById('chatLanding');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatRoomsDiv = document.getElementById('chatRoomsDiv');
+    const showRoomsBtn = document.getElementById('showRoomsBtn');
+    const chatTitle = document.getElementById('chatTitle');
+    const messagesDiv = document.getElementById('messagesDiv');
+    const txt = document.getElementById('txt');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Tab switching functionality
+    function showTab(tabName) {
+      // Hide all tab contents
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Remove active class from all tabs
+      const tabs = document.querySelectorAll('.nav-tab');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      
+      // Show selected tab content
+      document.getElementById(tabName).classList.add('active');
+      
+      // Add active class to clicked tab
+      event.target.classList.add('active');
+
+      // Load chats when chats tab is selected and show landing
+      if (tabName === 'chats') {
+        loadChats();
+        showChatLanding();
+      }
+
+      // Clean up WebSocket when leaving chats tab
+      if (tabName !== 'chats' && wsClient) {
+        wsClient.close();
+        wsClient = null;
+      }
+    }
+
     async function loadUser() {
-      const token = sessionStorage.getItem("token");
-      if (!token) { window.location.href = "login.html"; return; }
+      if (!token) { 
+        window.location.href = "login.html"; 
+        return; 
+      }
       
       try {
-        const res = await fetch(`${API_BASE_URL}${API_CONFIG.endpoints.USER_ME}`, {
+        const res = await fetch(`${API_BASE_URL}/user/me`, {
           headers: { "Authorization": "Bearer " + token }
         });
         if (!res.ok) throw new Error("Unauthorized");
@@ -130,39 +736,241 @@
         sessionStorage.setItem("user_id", user.id);
         document.getElementById("userName").textContent = user.name;
         document.getElementById("userEmail").textContent = user.email;
-
-        if (user.role === "doctor") {
-          document.getElementById("createSection").style.display = "block";
-        }
       } catch (err) {
+        console.error("Load user error:", err);
         sessionStorage.clear();
         alert("Please login again");
         window.location.href = "login.html";
       }
     }
 
-    // === MODALS ===
-    function openCreateModal() { document.getElementById("createChatModal").style.display = "block"; }
-    function closeCreateModal() { document.getElementById("createChatModal").style.display = "none"; }
-    function closeModal() { document.getElementById("chatModal").style.display = "none"; }
-    function openVitalsModal() { document.getElementById("vitalsModal").style.display = "block"; }
-    function closeVitalsModal() { 
-      document.getElementById("vitalsModal").style.display = "none";
+    // === CHAT FUNCTIONALITY ===
+    async function loadChats(){
+      chatRoomsDiv.innerHTML = '<div class="loading-state">Loading chat rooms...</div>';
+      try {
+        const res = await fetch(`${API_BASE_URL}/chats/my`, {
+          headers: { "Authorization": "Bearer "+token }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const chats = await res.json();
+        chatRoomsDiv.innerHTML = "";
+        
+        if(!Array.isArray(chats) || chats.length === 0) {
+          chatRoomsDiv.innerHTML = `
+            <div class="empty-state">
+              <h4>No chat rooms found</h4>
+              <p>Create a new chat room to start communicating with patients.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        chats.forEach(c => {
+          const div = document.createElement("div");
+          div.className = "card";
+          
+          const title = document.createElement("h4");
+          title.textContent = c.name || "Chat Room";
+          
+          const button = document.createElement("button");
+          button.className = "button";
+          button.textContent = "Open";
+          
+          button.addEventListener('click', () => {
+            openChat(c.id, c.name || 'Chat Room');
+          });
+          
+          div.appendChild(title);
+          div.appendChild(button);
+          chatRoomsDiv.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading chats:', error);
+        chatRoomsDiv.innerHTML = `
+          <div class="error-state">
+            <h4>Error loading chat rooms</h4>
+            <p>Please check your connection and try again.</p>
+            <button class="button" onclick="loadChats()" style="margin-top: 1rem;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    function showChatLanding(){
+      chatLanding.style.display = "block";
+      chatMessages.style.display = "none";
+      showRoomsBtn.textContent = "Show Chat Messages";
+    }
+    
+    function showChatMessages(){
+      chatLanding.style.display = "none";
+      chatMessages.style.display = "flex";
+      showRoomsBtn.textContent = "Show All Chats";
+    }
+
+    window.openChat = async function(id, name){
+      currentChatId = id;
+      chatTitle.textContent = name;
+      showChatMessages();
+      await loadHistory();
+      await connectWS();
+    }
+
+    async function loadHistory(){
+      messagesDiv.innerHTML = '<div class="loading-state">Loading messages...</div>';
+      try {
+        const res = await fetch(`${API_BASE_URL}/chats/${currentChatId}/messages`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const msgs = await res.json();
+        messagesDiv.innerHTML = "";
+        if(msgs.length === 0){
+          messagesDiv.innerHTML = `
+            <div class="empty-state">
+              <h4>Start the conversation</h4>
+              <p>Send a message to begin chatting</p>
+            </div>
+          `;
+        } else {
+          msgs.forEach(showMessage);
+        }
+      } catch (error) {
+        console.error('Error loading history:', error);
+        messagesDiv.innerHTML = '<div class="error-state"><h4>Failed to load messages</h4></div>';
+      }
+    }
+
+    function showMessage(msg){
+      const existingState = messagesDiv.querySelector('.loading-state, .empty-state');
+      if (existingState) {
+        existingState.remove();
+      }
+
+      const bubble = document.createElement('div');
+      const own = Number(msg.sender_id) === Number(sessionStorage.getItem('user_id'));
+      bubble.className = 'message-bubble ' + (own ? 'own' : 'other');
+
+      let ts = "now";
+      try {
+        ts = new Date(msg.timestamp).toLocaleString([], { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: true, 
+          day: 'numeric', 
+          month: 'short'
+        });
+      } catch(e) {}
+
+      bubble.innerHTML = `
+        <div class="message-content">${escapeHtml(msg.content)}</div>
+        <div class="message-meta">${ts}</div>
+      `;
+      messagesDiv.appendChild(bubble);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function escapeHtml(text){
+      return text.replace(/[&<>"']/g, m => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'}[m]));
+    }
+
+    async function connectWS(){
+      if(wsClient){
+        wsClient.close();
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/ws-token`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer '+token }
+        });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { ws_token } = await res.json();
+
+        let wsUrl;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          wsUrl = `ws://127.0.0.1:8000/chats/ws/${currentChatId}?ws_token=${ws_token}`;
+        } else {
+          wsUrl = `wss://${window.location.host}/chats/ws/${currentChatId}?ws_token=${ws_token}`;
+        }
+
+        wsClient = new WebSocket(wsUrl);
+
+        sendBtn.disabled = true;
+
+        wsClient.onopen = () => {
+          sendBtn.disabled = false;
+          console.log('WebSocket connected');
+        };
+        wsClient.onmessage = (ev) => {
+          const msg = JSON.parse(ev.data);
+          showMessage(msg);
+        };
+        wsClient.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+        wsClient.onclose = (event) => {
+          console.log(`WebSocket closed: ${event.code} - ${event.reason}`);
+          sendBtn.disabled = true;
+        };
+      } catch (err) {
+        console.error('Error connecting WebSocket:', err);
+        sendBtn.disabled = true;
+      }
+    }
+
+    txt.addEventListener('input', () => {
+      txt.style.height = 'auto';
+      txt.style.height = Math.min(txt.scrollHeight, 96) + 'px';
+      sendBtn.disabled = !txt.value.trim() || !wsClient || wsClient.readyState !== WebSocket.OPEN;
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    txt.addEventListener('keydown', (e) => { 
+      if(e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function sendMessage(){
+      if(!wsClient || wsClient.readyState !== WebSocket.OPEN) return;
+      const text = txt.value.trim();
+      if(!text) return;
+      
+      try {
+        wsClient.send(JSON.stringify({content: text}));
+        txt.value = '';
+        txt.style.height = 'auto';
+        sendBtn.disabled = true;
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
+
+    // === CREATE ROOM FUNCTIONALITY ===
+    function showCreateSection() {
+      const createSection = document.getElementById("createSection");
+      const isVisible = createSection.style.display !== "none";
+      createSection.style.display = isVisible ? "none" : "block";
+      
+      const btn = document.getElementById('createToggleBtn');
+      btn.textContent = isVisible ? "Create Room" : "Hide Create";
+    }
+
+    function hideCreateSection() {
+      document.getElementById("createSection").style.display = "none";
+      document.getElementById('createToggleBtn').textContent = "Create Room";
+      
       // Clear form
-      ['vitalEmail', 'vitalBP', 'vitalHeartRate', 'vitalTemp', 'vitalNotes'].forEach(id => {
-        document.getElementById(id).value = "";
-      });
+      document.getElementById("roomName").value = "";
+      document.getElementById("participantEmails").value = "";
     }
 
-    function logout() {
-      sessionStorage.clear();
-      window.location.href = "login.html";
-    }
-
-    // === CREATE CHAT ROOM WITH EMAILS ===
-    document.getElementById("createBtn").addEventListener("click", openCreateModal);
-    document.getElementById("submitRoomBtn").addEventListener("click", async () => {
-      const token = sessionStorage.getItem("token");
+    async function createRoom() {
       const name = document.getElementById("roomName").value.trim();
       const emailsRaw = document.getElementById("participantEmails").value.trim();
       
@@ -182,7 +990,7 @@
       }
 
       try {
-        const res = await fetch(`${API_BASE_URL}${API_CONFIG.endpoints.CHATS_CREATE}`, {
+        const res = await fetch(`${API_BASE_URL}/chats/create`, {
           method: "POST",
           headers: { 
             "Authorization": "Bearer " + token, 
@@ -199,54 +1007,37 @@
 
         const data = await res.json();
         alert("Chat room created successfully!");
-        closeCreateModal();
-        location.href = `chat.html?chatId=${data.id}`;
+        
+        // Clear and hide form
+        hideCreateSection();
+        
+        // Refresh rooms list
+        loadChats();
+        
       } catch (err) {
         console.error("Error creating chat room:", err);
         alert("Error creating chat room. Please try again.");
       }
-    });
-
-    // === VIEW CHATS ===
-    async function viewMyChats() {
-      const token = sessionStorage.getItem("token");
-      
-      try {
-        const res = await fetch(`${API_BASE_URL}${API_CONFIG.endpoints.CHATS_MY}`, {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
-        const chats = await res.json();
-        const chatRoomsDiv = document.getElementById("chatRooms");
-        chatRoomsDiv.innerHTML = "";
-
-        if (chats.length === 0) {
-          chatRoomsDiv.innerHTML = "<p>No chat rooms found. Create one to get started!</p>";
-        } else {
-          chats.forEach(chat => {
-            const card = document.createElement("div");
-            card.className = "chat-card";
-            card.innerHTML = `
-              <h3>${chat.name || "Chat Room"}</h3>
-              <p>Room ID: ${chat.id}</p>
-              <button onclick="openChat(${chat.id})">Open Chat</button>
-            `;
-            chatRoomsDiv.appendChild(card);
-          });
-        }
-
-        document.getElementById("chatModal").style.display = "block";
-      } catch (err) {
-        console.error("Error loading chats:", err);
-        alert("Error loading chat rooms");
-      }
     }
 
-    function openChat(chatId) {
-      if (!chatId) { alert("Chat ID required"); return; }
-      location.href = `chat.html?chatId=${chatId}`;
+    // === VITALS MODAL ===
+    function openVitalsModal() { document.getElementById("vitalsModal").style.display = "block"; }
+    function closeVitalsModal() { 
+      document.getElementById("vitalsModal").style.display = "none";
+      // Clear form
+      ['vitalEmail', 'vitalBP', 'vitalHeartRate', 'vitalTemp', 'vitalNotes'].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+    }
+
+    function logout(){
+      if (wsClient) {
+        wsClient.close();
+        wsClient = null;
+      }
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = 'login.html';
     }
 
     // === ADD ENHANCED VITALS ===
@@ -275,10 +1066,8 @@
         notes: notes || null
       };
 
-      const token = sessionStorage.getItem("token");
-      
       try {
-        const res = await fetch(`${API_BASE_URL}${API_CONFIG.endpoints.ADD_VITAL}`, {
+        const res = await fetch(`${API_BASE_URL}/add-vital`, {
           method: "POST",
           headers: { 
             "Authorization": "Bearer " + token, 
@@ -302,7 +1091,20 @@
       }
     });
 
-    loadUser();
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+    }
+
+    // Initialize the dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUser();
+    });
   </script>
 </body>
 </html>

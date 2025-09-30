@@ -48,3 +48,376 @@ INFO:     127.0.0.1:49511 - "GET /admin/users HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49511 - "OPTIONS /admin/chats HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49515 - "OPTIONS /admin/settings HTTP/1.1" 200 OK
 INFO:     127.0.0.1:49510 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50282 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:50285 - "GET /frontend/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50282 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50289 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50290 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50289 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50289 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50293 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50293 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50294 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50294 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50298 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50298 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50301 - "GET /frontend/chat.html?chatId=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50301 - "GET /frontend/style.css HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50304 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50304 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50309 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50309 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50333 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50333 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "OPTIONS /appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "GET /appointments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50334 - "OPTIONS /get_vitals?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "GET /get_vitals?limit=100 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50334 - "OPTIONS /chats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "GET /chats HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50334 - "OPTIONS /appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50334 - "GET /appointments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50339 - "OPTIONS /get_vitals?limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50339 - "GET /get_vitals?limit=10 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50342 - "OPTIONS /appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50342 - "GET /appointments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50342 - "OPTIONS /get_vitals?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50342 - "GET /get_vitals?limit=100 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50342 - "OPTIONS /chats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50342 - "GET /chats HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50344 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50348 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50349 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50348 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50350 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50348 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50350 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50357 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50364 - "OPTIONS /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50364 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50364 - "OPTIONS /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50364 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50364 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50391 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50393 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50407 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50410 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50411 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50411 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50411 - "OPTIONS /appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50411 - "GET /appointments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50411 - "OPTIONS /chats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50411 - "GET /chats HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50411 - "OPTIONS /get_vitals?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50411 - "GET /get_vitals?limit=100 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50413 - "GET /appointments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50415 - "GET /chats HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50415 - "OPTIONS /get_vitals?limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50415 - "GET /get_vitals?limit=10 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50418 - "GET /get_vitals?limit=10 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50418 - "GET /chats HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50418 - "GET /appointments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50419 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50421 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50422 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50421 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50423 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50423 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50423 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50429 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50449 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50450 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50450 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50449 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50449 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50453 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50453 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50453 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50454 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50456 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50457 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50456 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50456 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50456 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50457 - "GET /frontend/chat.html?chatId=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50457 - "GET /frontend/style.css HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50462 - "GET /frontend/doctor_appointment.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50463 - "OPTIONS /get_all_appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50463 - "GET /get_all_appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50466 - "OPTIONS /appointment_response HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50466 - "PUT /appointment_response HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50467 - "GET /frontend/doctor_appointment.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50467 - "GET /frontend/config.js HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50466 - "GET /get_all_appointments HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50471 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50472 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50472 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50477 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50481 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50482 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50481 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50484 - "OPTIONS /add_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50484 - "POST /add_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50486 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50487 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50488 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50486 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50488 - "OPTIONS /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50486 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "OPTIONS /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "OPTIONS /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "GET /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "OPTIONS /family/permissions/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "PUT /family/permissions/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50490 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50492 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50493 - "GET /frontend/family_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50494 - "OPTIONS /family/my-patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50497 - "OPTIONS /family/my-patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50492 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50495 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50496 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50498 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50494 - "GET /family/my-patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50497 - "GET /family/my-patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50504 - "OPTIONS /family/patient-records/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50504 - "GET /family/patient-records/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50507 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50507 - "GET /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "PUT /family/permissions/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50507 - "PUT /family/permissions/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50506 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50509 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50512 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50509 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50513 - "GET /family/my-patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50510 - "GET /family/my-patients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50514 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50511 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50512 - "OPTIONS /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50509 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50513 - "OPTIONS /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50510 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50512 - "OPTIONS /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50509 - "GET /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50513 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50512 - "OPTIONS /family/patient-appointments/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50509 - "GET /family/patient-appointments/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50522 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50523 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50522 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50522 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50522 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50525 - "GET /frontend/chat_rooms.html?chatId=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50526 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50527 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50527 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50526 - "GET /frontend/chat_rooms.html?chatId=2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50526 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50528 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50528 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50528 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50528 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50539 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50541 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50544 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50550 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50552 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50552 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50554 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50552 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50552 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50552 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50554 - "GET /frontend/chat_rooms.html?chatId=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50554 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50554 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50559 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50559 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50559 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50559 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50554 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50562 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50563 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50563 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50562 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50562 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50562 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50562 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50563 - "GET /frontend/chat_rooms.html?chatId=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50601 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50610 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50611 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50619 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50623 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50623 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50619 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50617 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50619 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50601 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50623 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50628 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50630 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50628 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50637 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50638 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50638 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50637 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50637 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50638 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50643 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50644 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50643 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50645 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50643 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50645 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50650 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50651 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 304 HTTP 304
+INFO:     127.0.0.1:50650 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50657 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50658 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "OPTIONS /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "OPTIONS /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50657 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50662 - "OPTIONS /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50662 - "GET /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50662 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50666 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50668 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50668 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50671 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50671 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50672 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50671 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50671 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50672 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50671 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50672 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50696 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50696 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50698 - "OPTIONS /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50698 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50698 - "OPTIONS /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50698 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50698 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50730 - "GET / HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:50730 - "GET /frontend/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50737 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50737 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50738 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50738 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "OPTIONS /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "OPTIONS /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50738 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50736 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50738 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50749 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50749 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50738 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50750 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50738 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50750 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50753 - "GET /frontend/login.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50755 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50756 - "GET /frontend/doctor_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50755 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50755 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50775 - "POST /token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50777 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50775 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50778 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50775 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50778 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50775 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50778 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50784 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50784 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50784 - "OPTIONS /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50784 - "GET /chats/1/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50784 - "OPTIONS /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50784 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50790 - "OPTIONS /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50790 - "GET /chats/2/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50790 - "POST /ws-token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50795 - "OPTIONS /get-vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50795 - "GET /get-vital HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50799 - "OPTIONS /family/get-all-family-members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50799 - "GET /family/get-all-family-members HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50802 - "OPTIONS /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50802 - "GET /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50804 - "GET /family/get-all-family-members HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50806 - "GET /get-vital HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50807 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50807 - "GET /frontend/config.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50808 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50809 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50808 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50809 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50808 - "OPTIONS /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50809 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50812 - "OPTIONS /family/get-all-family-members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50812 - "GET /family/get-all-family-members HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50814 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50815 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50816 - "OPTIONS /users/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50815 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50816 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50815 - "OPTIONS /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50816 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50818 - "OPTIONS /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50818 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50818 - "OPTIONS /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50818 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50818 - "GET /users/me HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50821 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50822 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50823 - "OPTIONS /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50823 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50822 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50827 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50827 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50827 - "OPTIONS /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50827 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50833 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50845 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50846 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50847 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50846 - "GET /patient/appointments/detailed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50846 - "GET /chats/my HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50846 - "GET /get_vital HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50846 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50854 - "OPTIONS /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50854 - "GET /family/permissions/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50854 - "OPTIONS /family/permissions/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50859 - "GET /frontend/patient_dashboard.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50860 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50861 - "GET /user/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50854 - "PUT /family/permissions/2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50860 - "GET /family/get_all_family_members HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50861 - "GET /family/permissions/1 HTTP/1.1" 200 OK
