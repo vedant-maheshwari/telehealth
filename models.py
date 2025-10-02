@@ -57,6 +57,20 @@ class User(Base):
 
     availability_settings: Mapped[List["DoctorAvailability"]] = relationship(back_populates="doctor")
 
+    patient_permissions: Mapped[List["FamilyPermissions"]] = relationship(
+        "FamilyPermissions",
+        foreign_keys="FamilyPermissions.patient_id",  # ✅ String reference
+        back_populates="patient",
+        cascade="all, delete-orphan"
+    )
+    
+    family_member_permissions: Mapped[List["FamilyPermissions"]] = relationship(
+        "FamilyPermissions",
+        foreign_keys="FamilyPermissions.family_member_id",  # ✅ String reference
+        back_populates="family_member",
+        cascade="all, delete-orphan"
+    )
+
 
 # models.py - ADD CASCADE DELETES
 
@@ -97,11 +111,25 @@ class FamilyPermissions(Base):
     __tablename__ = 'family_permissions'
     
     id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
     family_member_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"))
     permissions: Mapped[List[str]] = mapped_column(JSON, default=list)
     
-    # Relationship
-    family_member: Mapped["User"] = relationship("User", foreign_keys=[family_member_id])
+    # FIXED: Explicit foreign_keys specification
+    patient: Mapped["User"] = relationship(
+        "User", 
+        foreign_keys=[patient_id],  # ✅ Specify which foreign key
+        back_populates="patient_permissions"
+    )
+    family_member: Mapped["User"] = relationship(
+        "User", 
+        foreign_keys=[family_member_id],  # ✅ Specify which foreign key
+        back_populates="family_member_permissions"
+    )
+    
+    __table_args__ = (
+        UniqueConstraint('patient_id', 'family_member_id', name='unique_patient_family_permissions'),
+    )
 
 
 # Update Appointments model

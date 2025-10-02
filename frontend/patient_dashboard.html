@@ -1214,31 +1214,61 @@
     }
 
     // Update permission function
+    // async function updatePermission(familyMemberId, permissionType, isEnabled) {
+    //   try {
+    //     const updateData = {};
+    //     updateData[permissionType] = isEnabled;
+        
+    //     const res = await fetch(`${API_BASE_URL}/family/permissions/${familyMemberId}`, {
+    //       method: 'PUT',
+    //       headers: {
+    //         'Authorization': 'Bearer ' + token,
+    //         'Content-Type': 'application/json'
+    //       },
+    //       body: JSON.stringify(updateData)
+    //     });
+        
+    //     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        
+    //     const result = await res.json();
+    //     console.log('Permission updated:', result);
+    //   } catch (error) {
+    //     console.error('Error updating permission:', error);
+    //     alert('Error updating permission: ' + error.message);
+    //     // Reload permissions to reset the toggle
+    //     loadFamilyPermissions();
+    //   }
+    // }
+
     async function updatePermission(familyMemberId, permissionType, isEnabled) {
-      try {
-        const updateData = {};
-        updateData[permissionType] = isEnabled;
-        
-        const res = await fetch(`${API_BASE_URL}/family/permissions/${familyMemberId}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(updateData)
-        });
-        
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        
-        const result = await res.json();
-        console.log('Permission updated:', result);
-      } catch (error) {
-        console.error('Error updating permission:', error);
-        alert('Error updating permission: ' + error.message);
-        // Reload permissions to reset the toggle
-        loadFamilyPermissions();
-      }
-    }
+  try {
+    // Get current user ID (patient ID) from token
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentUserId = payload.id;
+    
+    const updateData = {};
+    updateData[permissionType] = isEnabled;
+    
+    // FIXED: Use correct URL format with patient_id and family_member_id
+    const res = await fetch(`${API_BASE_URL}/family/permissions/${currentUserId}/${familyMemberId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData)
+    });
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    
+    const result = await res.json();
+    console.log('Permission updated:', result);
+  } catch (error) {
+    console.error('Error updating permission:', error);
+    alert('Error updating permission: ' + error.message);
+    loadFamilyPermissions();
+  }
+}
 
     // Family invitation form - ORIGINAL PATIENT CODE
     document.getElementById("inviteForm").addEventListener("submit", async function(e) {
@@ -1258,7 +1288,7 @@
       submitBtn.disabled = true;
       
       try {
-        const res = await fetch(`${API_BASE_URL}/family/send-invitation`, {
+        const res = await fetch(`${API_BASE_URL}/family/send_invitation`, {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + token,
@@ -1415,34 +1445,40 @@
       }
     }
 
-    function showMessage(msg){
-      const existingState = messagesDiv.querySelector('.loading-state, .empty-state');
-      if (existingState) {
-        existingState.remove();
-      }
+    let lastSenderId = null;
 
-      const bubble = document.createElement('div');
-      const own = Number(msg.sender_id) === Number(sessionStorage.getItem('user_id'));
-      bubble.className = 'message-bubble ' + (own ? 'own' : 'other');
+function showMessage(msg) {
+  const existingState = messagesDiv.querySelector('.loading-state, .empty-state');
+  if (existingState) existingState.remove();
 
-      let ts = "now";
-      try {
-        ts = new Date(msg.timestamp).toLocaleString([], { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          hour12: true, 
-          day: 'numeric', 
-          month: 'short'
-        });
-      } catch(e) {}
+  const own = Number(msg.sender_id) === Number(sessionStorage.getItem('user_id'));
+  const showSender = msg.sender_id !== lastSenderId;  
+  lastSenderId = msg.sender_id;
 
-      bubble.innerHTML = `
-        <div class="message-content">${escapeHtml(msg.content)}</div>
-        <div class="message-meta">${ts}</div>
-      `;
-      messagesDiv.appendChild(bubble);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble ' + (own ? 'own' : 'other');
+
+  let ts = "now";
+  try {
+    ts = new Date(msg.timestamp).toLocaleString([], { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true, 
+      day: 'numeric', 
+      month: 'short'
+    });
+  } catch(e) {}
+
+  bubble.innerHTML = `
+    ${!own && showSender ? `<div class="message-sender" style="font-weight:600; margin-bottom:4px;">${escapeHtml(msg.sender_name || "Unknown")}</div>` : ""}
+    <div class="message-content">${escapeHtml(msg.content)}</div>
+    <div class="message-meta">${ts}</div>
+  `;
+
+  messagesDiv.appendChild(bubble);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
 
     function escapeHtml(text){
       return text.replace(/[&<>"']/g, m => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'}[m]));

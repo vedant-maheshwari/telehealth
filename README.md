@@ -27,7 +27,7 @@ A modern, full-stack telehealth platform built with FastAPI and vanilla JavaScri
 
 ## Features
 
-### 👥 **Multi-Role User Management**
+### **Multi-Role User Management**
 - **Patients**: Book appointments, view vitals, manage health records
 - **Doctors**: Manage schedules, record vitals, conduct consultations
 - **Family Members**: Monitor patient health with permission-based access
@@ -736,7 +736,7 @@ Chat_Rooms (1) ←→ (M) Chat_Messages
 Chat_Rooms (1) ←→ (M) Chat_Participants
 ```
 
-## 🔐 Authentication & Security
+## Authentication & Security
 
 ### JWT Token Structure
 ```json

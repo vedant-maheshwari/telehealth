@@ -115,6 +115,7 @@ class ChatMessageOut(BaseModel):
     id: int
     chat_id: int
     sender_id: int
+    sender_name : str
     content: str
     timestamp: str
 

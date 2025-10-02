@@ -207,6 +207,59 @@ def get_my_chats(
     return result
 
 
+@router.get('/family')
+def get_my_chats(
+    patient_id: int = Query(..., description="Patient ID to filter chat rooms"),
+    current_user=Depends(auth.get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role == models.UserRoles.FAMILY:
+        # Check family connection for this patient
+        fc = db.query(models.FamilyConnections).filter(
+            models.FamilyConnections.patient_id == patient_id,
+            models.FamilyConnections.family_member_id == current_user.id
+        ).first()
+        if not fc:
+            return []
+
+        # Check message_doctor permission for THIS patient
+        perms = db.query(models.FamilyPermissions).filter(
+            models.FamilyPermissions.patient_id == patient_id,
+            models.FamilyPermissions.family_member_id == current_user.id
+        ).first()
+
+        if not perms or "message_doctor" not in perms.permissions:
+            return []
+
+        # Return chats ONLY for this patient and current user
+        chats = (
+            db.query(models.ChatRoom)
+            .join(models.ChatParticipant, models.ChatRoom.id == models.ChatParticipant.chat_id)
+            .filter(
+                models.ChatRoom.patient_id == patient_id,
+                models.ChatParticipant.user_id == current_user.id
+            )
+            .all()
+        )
+    else:
+        # For doctors or patients, return chats for this patient
+        chats = (
+            db.query(models.ChatRoom)
+            .join(models.ChatParticipant, models.ChatRoom.id == models.ChatParticipant.chat_id)
+            .filter(
+                models.ChatRoom.patient_id == patient_id,
+                models.ChatParticipant.user_id == current_user.id
+            )
+            .all()
+        )
+
+    return [{
+        "id": chat.id,
+        "name": chat.name or "Healthcare Chat",
+        "created_by": chat.created_by
+    } for chat in chats]
+
+
 @router.get("/{chat_id}/messages", response_model=List[schemas.ChatMessageOut])
 def get_chat_messages(chat_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     # ensure membership
@@ -252,10 +305,13 @@ def get_chat_messages(chat_id: int, db: Session = Depends(get_db), current_user:
 
     out = []
     for m in messages:
+        sender = db.query(models.User).filter(models.User.id == m.sender_id).first()
+        sender_name = sender.name if sender else "Unknown"
         out.append(schemas.ChatMessageOut(
             id=m.id,
             chat_id=m.chat_id,
             sender_id=m.sender_id,
+            sender_name=sender_name,  # Include sender name here
             content=m.content,
             timestamp=m.timestamp.isoformat()
         ))
@@ -338,11 +394,15 @@ async def websocket_chat(websocket: WebSocket, chat_id: int, ws_token: str = Que
             db.add(msg)
             db.commit()
             db.refresh(msg)
+            
+            sender = db.query(models.User).filter(models.User.id == msg.sender_id).first()
+            sender_name = sender.name if sender else "Unknown"
 
             payload = {
                 "id": msg.id,
                 "chat_id": msg.chat_id,
                 "sender_id": msg.sender_id,
+                "sender_name": sender_name,   
                 "content": msg.content,
                 "timestamp": msg.timestamp.isoformat()
             }

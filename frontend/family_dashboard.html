@@ -154,6 +154,13 @@
     .btn-info:hover:not(:disabled) {
       background: #0277bd;
     }
+    .btn-danger {
+      background: #d32f2f;
+      color: white;
+    }
+    .btn-danger:hover:not(:disabled) {
+      background: #c62828;
+    }
     .loading-state, .empty-state, .error-state {
       text-align: center;
       padding: 40px 20px;
@@ -166,7 +173,9 @@
       margin-bottom: 10px;
       color: inherit;
     }
-    
+    #chatRoomsCard {
+      display: none;
+    }
     /* Modal styles */
     .modal {
       display: none;
@@ -204,6 +213,36 @@
     }
     .close:hover {
       color: #000;
+    }
+    
+    /* Invitations styles */
+    .invitation-item {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #ff9800;
+    }
+    .invitation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+    .invitation-info h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+      font-size: 1.1rem;
+    }
+    .invitation-info p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .invitation-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     
     /* Appointment and vitals styles */
@@ -354,6 +393,18 @@
       cursor: not-allowed;
     }
     
+    /* Notification badge */
+    .notification-badge {
+      background: #ff4444;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      position: relative;
+      top: -2px;
+      margin-left: 5px;
+    }
+    
     /* Responsive design */
     @media (max-width: 768px) {
       .patients-grid {
@@ -374,6 +425,14 @@
       .chat-container {
         height: 400px;
       }
+      .invitation-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .invitation-actions {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -386,29 +445,43 @@
   <div class="container">
     <!-- User Info Card -->
     <div class="card">
-      <h3> Account Information</h3>
+      <h3>Account Information</h3>
       <p><strong>Name:</strong> <span id="userNameDetail"></span></p>
       <p><strong>Email:</strong> <span id="userEmail"></span></p>
       <div style="margin-top: 15px;">
         <button class="btn btn-secondary" onclick="logout()">Logout</button>
-        <button class="btn btn-primary" onclick="window.location.href='invitation_response.html'">Family Requests</button>
+        <button class="btn btn-primary" onclick="openInvitationsModal()">
+          Family Requests
+          <span id="invitationsBadge" class="notification-badge" style="display: none;">0</span>
+        </button>
       </div>
     </div>
 
     <!-- Patients Access Section -->
     <div class="card">
-      <h3> Your Family Members</h3>
+      <h3>Your Family Members</h3>
       <div id="patientsContainer" class="loading-state">Loading your family members...</div>
     </div>
 
     <!-- Chat Rooms Section -->
-    <div class="card">
-      <h3> Chat Rooms</h3>
+    <div class="card" id="chatRoomsCard">
+      <h3>Chat Rooms</h3>
       <div id="chatRoomsContainer" class="loading-state">Loading chat rooms...</div>
     </div>
   </div>
 
   <!-- Modals -->
+  
+  <!-- Family Invitations Modal -->
+  <div id="invitationsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📬 Pending Family Invitations</h3>
+        <span class="close" onclick="closeModal('invitationsModal')">&times;</span>
+      </div>
+      <div id="invitationsContent">Loading invitations...</div>
+    </div>
+  </div>
   
   <!-- Appointments Modal -->
   <div id="appointmentsModal" class="modal">
@@ -450,11 +523,10 @@
       </div>
     </div>
   </div>
+  
   <script src="config.js"></script>
   <script>
     // Environment-aware API URL
-   
-
     const API_BASE_URL = API_CONFIG.getApiBaseUrl();
     console.log('Using API Base URL:', API_BASE_URL);
 
@@ -498,6 +570,8 @@
         document.getElementById("userName").textContent = user.name;
         document.getElementById("userNameDetail").textContent = user.name;
         document.getElementById("userEmail").textContent = user.email;
+        
+        loadInvitationsCount();
       } catch (error) {
         console.error('Error loading user:', error);
         alert('Error loading user information. Please try logging in again.');
@@ -505,14 +579,134 @@
       }
     }
 
-    // Load patients that this family member has access to
+    // Load invitations count for badge
+    async function loadInvitationsCount() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/family/family_invitation_for_current_user`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (res.ok) {
+          const invites = await res.json();
+          const badge = document.getElementById('invitationsBadge');
+          if (invites && invites.length > 0) {
+            badge.textContent = invites.length;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading invitations count:', error);
+      }
+    }
+
+    // Open invitations modal and load invitations
+    async function openInvitationsModal() {
+      const modal = document.getElementById('invitationsModal');
+      const content = document.getElementById('invitationsContent');
+      
+      content.innerHTML = '<div class="loading-state">Loading invitations...</div>';
+      modal.style.display = 'block';
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/family/family_invitation_for_current_user`, {
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const invites = await response.json();
+        content.innerHTML = "";
+
+        if (!invites || invites.length === 0) {
+          content.innerHTML = `
+            <div class="empty-state">
+              <h4>No Pending Invitations</h4>
+              <p>You don't have any pending family invitations at the moment.</p>
+            </div>
+          `;
+          return;
+        }
+
+        invites.forEach(invite => {
+          const div = document.createElement("div");
+          div.className = "invitation-item";
+          div.innerHTML = `
+            <div class="invitation-header">
+              <div class="invitation-info">
+                <h4>Family Invitation</h4>
+                <p><strong>${invite.inviter_name}</strong> invited you as <strong>${invite.relationship_type}</strong></p>
+              </div>
+            </div>
+            <div class="invitation-actions">
+              <button class="btn btn-success" onclick="respondInvitation('${invite.token}', 'accept')">
+                ✓ Accept
+              </button>
+              <button class="btn btn-danger" onclick="respondInvitation('${invite.token}', 'reject')">
+                ✗ Reject
+              </button>
+            </div>
+          `;
+          content.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error('Error loading invitations:', err);
+        content.innerHTML = `
+          <div class="error-state">
+            <h4>Error Loading Invitations</h4>
+            <p>Failed to load invitations: ${err.message}</p>
+            <button class="btn btn-primary" onclick="openInvitationsModal()" style="margin-top: 15px;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Respond to invitation
+    async function respondInvitation(inviteToken, action) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/family/respond_invitation`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ token: inviteToken, action: action })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        alert(data.message || `Invitation ${action}ed successfully!`);
+        
+        openInvitationsModal();
+        loadInvitationsCount();
+        
+        if (action === 'accept') {
+          loadPatients();
+        }
+        
+      } catch (err) {
+        console.error('Error responding to invitation:', err);
+        alert(`Failed to ${action} invitation: ${err.message}`);
+      }
+    }
+
+   // loadPatients with chat room button only if can_message_doctor granted
     async function loadPatients() {
       const container = document.getElementById("patientsContainer");
       container.innerHTML = '<div class="loading-state">Loading your family members...</div>';
 
       try {
-        const res = await fetch(`${API_BASE_URL}/family/my-patients`, {
-          headers: { "Authorization": "Bearer " + token }
+        const res = await fetch(`${API_BASE_URL}/family/permissions/my`, {
+          headers: { "Authorization": "Bearer " + token },
         });
 
         if (!res.ok) {
@@ -521,7 +715,6 @@
 
         const patients = await res.json();
         patientsData = patients;
-        
         container.innerHTML = "";
 
         if (!patients || patients.length === 0) {
@@ -540,15 +733,14 @@
         patients.forEach(patient => {
           const patientCard = document.createElement("div");
           patientCard.className = "patient-card";
-          
-          const permissions = patient.permissions;
-          
+
+          const permissions = patient.permissions || {};
+
           patientCard.innerHTML = `
             <div class="patient-header">
               <div class="patient-name">${patient.patient_name}</div>
               <div class="relationship-tag">${patient.relationship_type}</div>
             </div>
-            
             <div class="permissions-section">
               <h4 style="margin-bottom: 10px; color: #666; font-size: 0.9rem;">Your Permissions:</h4>
               <div class="permission-item">
@@ -570,28 +762,34 @@
                 </span>
               </div>
             </div>
-            
             <div class="action-buttons">
-              <button class="btn btn-primary" onclick="viewAppointments(${patient.patient_id}, '${patient.patient_name}')" 
-                      ${!permissions.can_view_records ? 'disabled title="No permission to view appointments"' : ''}>
-                 View Appointments
+              <button class="btn btn-primary" onclick="viewAppointments(${patient.patient_id}, '${patient.patient_name}')"
+                ${!permissions.can_view_records ? 'disabled title="No permission to view appointments"' : ''}>
+                View Appointments
               </button>
-              <button class="btn btn-success" onclick="viewVitals(${patient.patient_id}, '${patient.patient_name}')" 
-                      ${!permissions.can_view_records ? 'disabled title="No permission to view medical records"' : ''}>
-                 View Medical Records
+              <button class="btn btn-success" onclick="viewVitals(${patient.patient_id}, '${patient.patient_name}')"
+                ${!permissions.can_view_records ? 'disabled title="No permission to view medical records"' : ''}>
+                View Medical Records
               </button>
-              <button class="btn btn-info" onclick="bookAppointmentForPatient(${patient.patient_id}, '${patient.patient_name}')" 
-                      ${!permissions.can_book_appointments ? 'disabled title="No permission to book appointments"' : ''}>
-                 Book Appointment
+              <button class="btn btn-info" onclick="bookAppointmentForPatient(${patient.patient_id}, '${patient.patient_name}')"
+                ${!permissions.can_book_appointments ? 'disabled title="No permission to book appointments"' : ''}>
+                Book Appointment
               </button>
+              ${
+                permissions.can_message_doctor
+                  ? `<button class="btn btn-warning" onclick="showAndLoadChatRooms(${patient.patient_id})">
+                      Load Chat Rooms
+                    </button>`
+                  : ""
+              }
             </div>
           `;
-          
+
           gridDiv.appendChild(patientCard);
         });
 
         container.appendChild(gridDiv);
-        
+
       } catch (error) {
         console.error("Error loading patients:", error);
         container.innerHTML = `
@@ -604,30 +802,37 @@
       }
     }
 
-    // Load chat rooms
-    async function loadChatRooms() {
+    // Show chat rooms card and load chat rooms for given patient
+    function showAndLoadChatRooms(patientId) {
+      const chatCard = document.getElementById("chatRoomsCard");
+      chatCard.style.display = "block";
+      chatCard.scrollIntoView({ behavior: "smooth" });
+
+      loadChatRoomsForPatient(patientId);
+    }
+
+
+    // Load chat rooms for patient
+    async function loadChatRoomsForPatient(patientId) {
       const container = document.getElementById("chatRoomsContainer");
       container.innerHTML = '<div class="loading-state">Loading chat rooms...</div>';
 
       try {
-        const res = await fetch(`${API_BASE_URL}/chats/my`, {
-          headers: { "Authorization": "Bearer " + token }
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
+        const res = await fetch(
+          `${API_BASE_URL}/chats/family?patient_id=${patientId}`,
+          { headers: { "Authorization": "Bearer " + token } }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
         const chatRooms = await res.json();
         container.innerHTML = "";
 
-        if (!chatRooms || chatRooms.length === 0) {
+        if (!Array.isArray(chatRooms) || chatRooms.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
               <h4>No Chat Rooms Found</h4>
-              <p>Your healthcare provider will create chat rooms for consultations.</p>
-            </div>
-          `;
+              <p>You do not have chat access for this patient.</p>
+            </div>`;
           return;
         }
 
@@ -637,17 +842,14 @@
         chatRooms.forEach(room => {
           const roomCard = document.createElement("div");
           roomCard.className = "chat-room-card";
-          
           roomCard.innerHTML = `
             <div class="chat-room-info">
-              <h4>${room.name || 'Chat Room'}</h4>
-              <p>Healthcare Consultation</p>
+              <h4>${room.name || "Chat Room"}</h4>
             </div>
-            <button class="btn btn-warning" onclick="openChatRoom(${room.id}, '${room.name || 'Chat Room'}')">
-               Open Chat
+            <button class="btn btn-warning" onclick="openChatRoom(${room.id}, '${room.name || "Chat Room"}')">
+              Open Chat
             </button>
           `;
-          
           chatGrid.appendChild(roomCard);
         });
 
@@ -659,11 +861,15 @@
           <div class="error-state">
             <h4>Error Loading Chat Rooms</h4>
             <p>There was a problem loading your chat rooms: ${error.message}</p>
-            <button class="btn btn-primary" onclick="loadChatRooms()" style="margin-top: 15px;">Retry</button>
-          </div>
-        `;
+          </div>`;
       }
     }
+
+
+  // In your loadPatients(), when rendering each patient card, change:
+  // onclick="loadChatRooms()"
+  // to:
+  // onclick="loadChatRoomsForPatient(${patient.patient_id})"
 
     // View appointments for a patient
     async function viewAppointments(patientId, patientName) {
@@ -714,75 +920,72 @@
 
     // View medical records (vitals) for a patient
     async function viewVitals(patientId, patientName) {
-  const modal = document.getElementById('vitalsModal');
-  const title = document.getElementById('vitalsModalTitle');
-  const content = document.getElementById('vitalsContent');
-  const token = sessionStorage.getItem('token');
+      const modal = document.getElementById('vitalsModal');
+      const title = document.getElementById('vitalsModalTitle');
+      const content = document.getElementById('vitalsContent');
+      const token = sessionStorage.getItem('token');
 
-  title.textContent = `${patientName}'s Medical Records`;
-  content.innerHTML = '<div class="loading-state">Loading medical records...</div>';
-  modal.style.display = 'block';
+      title.textContent = `${patientName}'s Medical Records`;
+      content.innerHTML = '<div class="loading-state">Loading medical records...</div>';
+      modal.style.display = 'block';
 
-  try {
-    const res = await fetch(
-      `${API_CONFIG.getApiBaseUrl()}${API_CONFIG.endpoints.FAMILY_VITALS}/${patientId}`, {
-        headers: { "Authorization": "Bearer " + token }
+      try {
+        const res = await fetch(
+          `${API_CONFIG.getApiBaseUrl()}${API_CONFIG.endpoints.FAMILY_VITALS}/${patientId}`, {
+            headers: { "Authorization": "Bearer " + token }
+          }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+        const vitals = await res.json();
+        content.innerHTML = "";
+
+        if (!vitals.length) {
+          content.innerHTML = `
+            <div class="empty-state">
+              <h4>No Medical Records Found</h4>
+              <p>No medical records have been recorded for this patient yet.</p>
+            </div>`;
+          return;
+        }
+
+        vitals.forEach(vital => {
+          const div = document.createElement("div");
+          div.className = "vital-item";
+
+          const date = new Date(vital.timestamp).toLocaleString();
+          const bp = vital.bp ?? "Not recorded";
+          const hr = vital.heart_rate ?? "Not recorded";
+          const temp = vital.temperature ?? "Not recorded";
+          const notes = vital.notes ?? "No notes";
+
+          div.innerHTML = `
+            <div class="vital-date"><strong>Recorded At:</strong> ${date}</div>
+            <div class="vital-value"><strong>Blood Pressure:</strong> ${bp}</div>
+            <div class="vital-value"><strong>Heart Rate:</strong> ${hr} bpm</div>
+            <div class="vital-value"><strong>Temperature:</strong> ${temp}°F</div>
+            <div class="vital-value"><strong>Notes:</strong> ${notes}</div>
+          `;
+          content.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Error loading medical records:", error);
+        content.innerHTML = `
+          <div class="error-state">
+            <h4>Error Loading Medical Records</h4>
+            <p>${error.message}</p>
+          </div>`;
       }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-
-    const vitals = await res.json();
-    content.innerHTML = "";
-
-    if (!vitals.length) {
-      content.innerHTML = `
-        <div class="empty-state">
-          <h4>No Medical Records Found</h4>
-          <p>No medical records have been recorded for this patient yet.</p>
-        </div>`;
-      return;
     }
-
-    vitals.forEach(vital => {
-      const div = document.createElement("div");
-      div.className = "vital-item";
-
-      const date = new Date(vital.timestamp).toLocaleString();
-      const bp = vital.bp ?? "Not recorded";
-      const hr = vital.heart_rate ?? "Not recorded";
-      const temp = vital.temperature ?? "Not recorded";
-      const notes = vital.notes ?? "No notes";
-
-      div.innerHTML = `
-        <div class="vital-date"><strong>Recorded At:</strong> ${date}</div>
-        <div class="vital-value"><strong>Blood Pressure:</strong> ${bp}</div>
-        <div class="vital-value"><strong>Heart Rate:</strong> ${hr} bpm</div>
-        <div class="vital-value"><strong>Temperature:</strong> ${temp}°F</div>
-        <div class="vital-value"><strong>Notes:</strong> ${notes}</div>
-      `;
-      content.appendChild(div);
-    });
-  } catch (error) {
-    console.error("Error loading medical records:", error);
-    content.innerHTML = `
-      <div class="error-state">
-        <h4>Error Loading Medical Records</h4>
-        <p>${error.message}</p>
-      </div>`;
-  }
-}
-
 
     // Book appointment for patient (redirect to create_appointment.html)
     function bookAppointmentForPatient(patientId, patientName) {
-      // Store the patient info for the appointment booking page
       sessionStorage.setItem('bookingForPatient', JSON.stringify({
         patientId: patientId,
         patientName: patientName,
         bookedByFamily: true
       }));
       
-      // Redirect to the appointment booking page
       window.location.href = 'create_appointment.html';
     }
 
@@ -849,7 +1052,6 @@
         
         const { ws_token } = await res.json();
         
-        // FIXED WebSocket URL logic
         let wsUrl;
         if (API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1')) {
           wsUrl = `ws://localhost:8000/chats/ws/${currentChatId}?ws_token=${ws_token}`;
@@ -890,39 +1092,44 @@
       }
     }
 
-    // Show message in chat
-    function showMessage(message) {
-      const messagesContainer = document.getElementById('chatMessages');
-      
-      // Remove loading/empty state if present
-      const existingState = messagesContainer.querySelector('.loading-state, .empty-state');
-      if (existingState) {
-        existingState.remove();
-      }
-      
-      const messageBubble = document.createElement('div');
-      const isOwnMessage = Number(message.sender_id) === Number(sessionStorage.getItem('user_id'));
-      messageBubble.className = 'message-bubble ' + (isOwnMessage ? 'own' : 'other');
-      
-      let timestamp = "now";
-      try {
-        timestamp = new Date(message.timestamp).toLocaleString([], { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          hour12: true, 
-          day: 'numeric', 
-          month: 'short'
-        });
-      } catch(e) {}
-      
-      messageBubble.innerHTML = `
-        <div class="message-content">${escapeHtml(message.content)}</div>
-        <div class="message-meta">${timestamp}</div>
-      `;
-      
-      messagesContainer.appendChild(messageBubble);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
+   let lastSenderId = null;
+
+function showMessage(msg) {
+  const messagesContainer = document.getElementById('chatMessages');
+  const existingState = messagesContainer.querySelector('.loading-state, .empty-state');
+  if (existingState) existingState.remove();
+
+  const own = Number(msg.sender_id) === Number(sessionStorage.getItem('user_id'));
+  const showSender = msg.sender_id !== lastSenderId;
+  lastSenderId = msg.sender_id;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble ' + (own ? 'own' : 'other');
+
+  let ts = "now";
+  try {
+    ts = new Date(msg.timestamp).toLocaleString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      day: 'numeric',
+      month: 'short'
+    });
+  } catch (e) {}
+
+  const senderName = msg.sender_name || `User ${msg.sender_id}`;
+
+  bubble.innerHTML = `
+    ${!own && showSender ? `<div class="message-sender" style="font-weight:600; margin-bottom:4px;">${escapeHtml(senderName)}</div>` : ""}
+    <div class="message-content">${escapeHtml(msg.content)}</div>
+    <div class="message-meta">${ts}</div>
+  `;
+
+  messagesContainer.appendChild(bubble);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+
 
     // Chat input handling
     const chatInput = document.getElementById('chatInput');
@@ -1033,6 +1240,9 @@
     loadUser();
     loadPatients();
     loadChatRooms();
+    
+    // Refresh invitations count every 30 seconds
+    setInterval(loadInvitationsCount, 30000);
   </script>
 </body>
 </html>
