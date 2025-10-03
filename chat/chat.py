@@ -76,15 +76,28 @@ def create_chat_room_with_emails(
     db: Session = Depends(get_db),
     current_user = Depends(auth.check_doctor)
 ):
-    # Create chat room
+    # Determine patient_id from participant emails
+    patient_id = None
+    doctor_id = current_user.id  # Doctor is the creator
+    
+    # Find patient from participants
+    for email in chat_data.participant_emails:
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if user and user.role == models.UserRoles.PATIENT:
+            patient_id = user.id
+            break  # Use the first patient found
+    
+    # Create chat room with patient_id and doctor_id
     chat_room = models.ChatRoom(
         name=chat_data.name,
-        created_by=current_user.id
+        created_by=current_user.id,
+        patient_id=patient_id,  # Set patient_id
+        doctor_id=doctor_id     # Set doctor_id
     )
     db.add(chat_room)
     db.flush()  # Get the ID
     
-    # Add creator as participant
+    # Add creator (doctor) as participant
     creator_participant = models.ChatParticipant(
         chat_id=chat_room.id,
         user_id=current_user.id
@@ -117,6 +130,8 @@ def create_chat_room_with_emails(
         "id": chat_room.id,
         "name": chat_room.name,
         "created_by": current_user.id,
+        "patient_id": chat_room.patient_id,
+        "doctor_id": chat_room.doctor_id,
         "participants_added": added_participants
     }
 

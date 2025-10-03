@@ -130,6 +130,14 @@ class DoctorAvailability(BaseModel):
     break_start: Optional[time] = None
     break_end: Optional[time] = None
 
+class AvailabilityItem(BaseModel):
+    day_of_week: int
+    start_time: str  # "HH:MM"
+    end_time: str    # "HH:MM"
+    appointment_duration: int
+    break_start: Optional[str] = None
+    break_end: Optional[str] = None
+
 class SetAvailabilityRequest(BaseModel):
     availabilities: List[DoctorAvailability]
 

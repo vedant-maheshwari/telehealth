@@ -35,27 +35,60 @@ class User(Base):
     date_of_birth : Mapped[DateTime] = mapped_column(DateTime(timezone=True))
     medical_license : Mapped[str] = mapped_column(String(50),nullable=True)
 
-    family_connections : Mapped[List["FamilyConnections"]] = relationship(back_populates="patient", 
-                                                                          foreign_keys="FamilyConnections.patient_id")
-    
-    related_as_family : Mapped[List["FamilyConnections"]] = relationship(back_populates='family_member',
-                                                                         foreign_keys="FamilyConnections.family_member_id")
-    
-    sent_invitations : Mapped[List["FamilyInvitations"]] = relationship(back_populates='invited', foreign_keys='FamilyInvitations.inviter_id')
-    
-    received_invitations : Mapped[List["FamilyInvitations"]] = relationship(back_populates='invitee',foreign_keys='FamilyInvitations.invitee_id')
-    
-    family_member_permissions : Mapped[List["FamilyPermissions"]] = relationship(back_populates='family_member')
-
-    patient_appointments : Mapped[List['Appointments']] = relationship(back_populates='patient', foreign_keys='Appointments.patient_id')
-
-    doctor_appointments : Mapped[List['Appointments']] = relationship(back_populates='doctor', foreign_keys='Appointments.doctor_id')
-
-    vitals : Mapped[List['Vitals']] = relationship(back_populates='patient', foreign_keys='Vitals.patient_id')
-
-    doctor_for_patient : Mapped[List['Vitals']] = relationship(back_populates='doctor', foreign_keys='Vitals.doctor_id')
-
-    availability_settings: Mapped[List["DoctorAvailability"]] = relationship(back_populates="doctor")
+    family_connections: Mapped[List["FamilyConnections"]] = relationship(
+        back_populates="patient",
+        foreign_keys="FamilyConnections.patient_id",
+        cascade="all, delete-orphan"
+    )
+    related_as_family: Mapped[List["FamilyConnections"]] = relationship(
+        back_populates="family_member",
+        foreign_keys="FamilyConnections.family_member_id",
+        cascade="all, delete-orphan"
+    )
+    sent_invitations: Mapped[List["FamilyInvitations"]] = relationship(
+        back_populates="invited",
+        foreign_keys="FamilyInvitations.inviter_id",
+        cascade="all, delete-orphan"
+    )
+    received_invitations: Mapped[List["FamilyInvitations"]] = relationship(
+        back_populates="invitee",
+        foreign_keys="FamilyInvitations.invitee_id",
+        cascade="all, delete-orphan"
+    )
+    family_member_permissions: Mapped[List["FamilyPermissions"]] = relationship(
+        back_populates="family_member",
+        foreign_keys="FamilyPermissions.family_member_id",
+        cascade="all, delete-orphan"
+    )
+    patient_permissions: Mapped[List["FamilyPermissions"]] = relationship(
+        back_populates="patient",
+        foreign_keys="FamilyPermissions.patient_id",
+        cascade="all, delete-orphan"
+    )
+    patient_appointments: Mapped[List['Appointments']] = relationship(
+        back_populates='patient',
+        foreign_keys='Appointments.patient_id',
+        cascade="all, delete-orphan"
+    )
+    doctor_appointments: Mapped[List['Appointments']] = relationship(
+        back_populates='doctor',
+        foreign_keys='Appointments.doctor_id',
+        cascade="all, delete-orphan"
+    )
+    vitals: Mapped[List['Vitals']] = relationship(
+        back_populates='patient',
+        foreign_keys='Vitals.patient_id',
+        cascade="all, delete-orphan"
+    )
+    doctor_for_patient: Mapped[List['Vitals']] = relationship(
+        back_populates='doctor',
+        foreign_keys='Vitals.doctor_id',
+        cascade="all, delete-orphan"
+    )
+    availability_settings: Mapped[List["DoctorAvailability"]] = relationship(
+        back_populates="doctor",
+        cascade="all, delete-orphan"
+    )
 
     patient_permissions: Mapped[List["FamilyPermissions"]] = relationship(
         "FamilyPermissions",

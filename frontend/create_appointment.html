@@ -6,125 +6,180 @@
   <title>Doctor Appointment Booking</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f5f5f5;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(110deg, #e3f2fd 0%, #f5f5f5 100%);
+      min-height: 100vh;
     }
     .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 36px auto 20px auto;
+      background: #fff;
+      padding: 42px 36px 30px 36px;
+      border-radius: 16px;
+      box-shadow: 0 6px 32px rgba(66,133,244,0.10);
     }
-    .form-group {
-      margin-bottom: 15px;
+    .step-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #1976d2;
+      margin-bottom: 18px;
+      letter-spacing: 0;
     }
     label {
       display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 6px;
     }
-    input, select, button {
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+    .form-group {
+      margin-bottom: 30px;
     }
-    select, input[type="date"] {
-      width: calc(100% - 10px);
+    input, select {
+      font-size: 16px;
+      padding: 12px 16px;
+      border: 2px solid #e3e6ea;
+      border-radius: 8px;
+      width: 100%;
+      outline: none;
+      background: #f7fafc;
+      margin-top: 4px;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus {
+      border-color: #1976d2;
+      background: #fff;
     }
     button {
-      background-color: #007bff;
+      padding: 12px 26px;
+      background: #1976d2;
       color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 5px;
+      box-shadow: 0 1px 6px #1976d22c;
       cursor: pointer;
+      transition: background .18s;
     }
-    button:hover {
-      background-color: #0056b3;
+    button:hover:enabled {
+      background: #1564b0;
     }
     button:disabled {
-      background-color: #ccc;
+      background: #bfc8d5;
       cursor: not-allowed;
     }
-    .slot {
-      padding: 10px 15px;
-      margin: 5px;
-      border: 2px solid #007bff;
-      cursor: pointer;
-      display: inline-block;
+
+    /* User Info & Card-Style Accent Boxes */
+    .user-info {
+      background-color: #e3e7ea;
+      border-left: 4px solid #4285f4;
+      padding: 18px 22px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 17px;
+      color: #125ea2;
+      box-shadow: 0 2px 8px #c7dcfa24;
+    }
+    .booking-for {
+      background-color: #fffbe7;
+      border-left: 5px solid #ffca28;
+      padding: 12px 18px;
       border-radius: 6px;
-      background-color: #f8f9fa;
-      transition: all 0.3s ease;
-    }
-    .slot:hover {
-      background-color: #e9ecef;
-    }
-    .slot.reserved {
-      background-color: #dc3545;
-      color: white;
-      border-color: #dc3545;
-      cursor: not-allowed;
-    }
-    .slot.selected {
-      background-color: #28a745;
-      color: white;
-      border-color: #28a745;
+      margin-bottom: 15px;
+      color: #996800;
+      font-size: 16px;
+      font-weight: 600;
     }
     .slots-container {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      min-height: 100px;
+      margin-top: 16px;
+      padding: 16px 18px 8px 18px;
+      border: 1.5px solid #e3e6ea;
+      border-radius: 8px;
+      min-height: 120px;
+      background: #f9fcff;
+      box-shadow: 0 1px 8px #2057920e;
+    }
+    .slot {
+      padding: 12px 26px;
+      margin: 8px 12px 8px 0;
+      border: 2px solid #1976d2;
+      cursor: pointer;
+      display: inline-block;
+      border-radius: 99px;
+      background-color: #f1fafe;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 
+        background .2s, 
+        color .2s, 
+        box-shadow .2s, 
+        border .2s, 
+        transform .15s;
+      box-shadow: 0 2px 8px #1976d225;
+      user-select: none;
+      position: relative;
+    }
+    .slot:hover:not(.reserved):not(.selected) {
+      background: #e3f0fc;
+      transform: translateY(-2px) scale(1.04);
+    }
+    .slot.selected {
+      background: #28a745;
+      color: white;
+      border-color: #28a745;
+      box-shadow: 0 2px 14px #28a74527;
+      transform: scale(1.09);
+    }
+    .slot.reserved {
+      background: #dc3545;
+      color: white;
+      border-color: #dc3545;
+      text-decoration: line-through;
+      cursor: not-allowed;
+      opacity: 0.65;
+      box-shadow: 0 2px 14px #dc354527;
+    }
+    .actions {
+      margin-top: 28px;
+      text-align: right;
     }
     .status {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 4px;
+      margin-top: 22px;
+      padding: 12px;
+      border-radius: 6px;
       display: none;
     }
     .status.success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background-color: #e0f9e2;
+      color: #116b34;
+      border: 1.5px solid #94e2a8;
+      font-size: 16px;
     }
     .status.error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .actions {
-      margin-top: 15px;
+      background-color: #fbe4e6;
+      color: #a10026;
+      border: 1.5px solid #e39596;
+      font-size: 16px;
     }
     .websocket-status {
-      padding: 5px 10px;
-      border-radius: 4px;
+      padding: 8px 13px;
+      border-radius: 5px;
       margin-left: 10px;
-      font-size: 12px;
+      font-size: 13px;
+      display: inline-block;
     }
     .connected {
-      background-color: #d4edda;
-      color: #155724;
+      background-color: #e7fbe7;
+      color: #1c8d2e;
+      border: 1.5px solid #51db7c;
     }
     .disconnected {
-      background-color: #f8d7da;
-      color: #721c24;
+      background-color: #fff0f2;
+      color: #a10020;
+      border: 1.5px solid #e39596;
     }
-    .user-info {
-      background-color: #e9ecef;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .booking-for {
-      background-color: #fff3cd;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      border-left: 4px solid #ffc107;
-    }
-
     /* Modal styles */
     .modal { 
       position: fixed; 
@@ -137,28 +192,44 @@
     .modal-content { 
       background: white; 
       margin: 10% auto; 
-      padding: 20px; 
-      width: 320px; 
-      border-radius: 8px; 
+      padding: 42px 24px 24px 24px; 
+      width: 340px; 
+      border-radius: 14px; 
       text-align: center; 
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.10);
+      border-top: 6px solid #4285f4;
+      animation: modalSlideIn 0.34s;
+    }
+    @keyframes modalSlideIn {
+      from { transform: scale(0.96) translateY(-25px);}
+      to { transform: scale(1) translateY(0);}
     }
     .modal-content button {
       margin: 8px;
       min-width: 100px;
+      font-size: 16px;
+    }
+    @media (max-width: 600px) {
+      .container {
+        max-width: 99vw;
+        padding: 2vw 1vw 8vw 1vw;
+      }
+      .modal-content { width: 97vw; }
+      .slots-container { padding: 10px 3vw 6px 3vw; }
+      .slot { font-size: 15px; padding: 12px 6vw;}
     }
   </style>
 </head>
 <body>
+  
   <div class="container">
-    <h1>Doctor Appointment Booking</h1>
+      <button id="backBtn" style="margin-bottom:18px;background:#e3e6ea;color:#1976d2;border:1.5px solid #1976d2;">&#8592; Back</button>
+
+    <div class="step-title">Book a Doctor's Appointment</div>
     
-    <!-- User Information Display -->
     <div id="userInfo" class="user-info">
       <h3>Loading user information...</h3>
     </div>
-
-    <!-- Booking For Information (if family member) -->
     <div id="bookingFor" class="booking-for" style="display: none;">
       <strong>Booking appointment for:</strong> <span id="patientName"></span>
     </div>
@@ -171,38 +242,35 @@
     </div>
     
     <div class="form-group">
-      <label for="dateInput">Date:</label>
+      <label for="dateInput">Pick a Date:</label>
       <input id="dateInput" type="date" />
     </div>
-
-    <div class="form-group">
-      <button id="loadSlotsBtn">Load Available Slots</button>
-      <span id="wsStatus" class="websocket-status disconnected">WebSocket: Disconnected</span>
+    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+      <button id="loadSlotsBtn">See Available Slots</button>
+      <span id="wsStatus" class="websocket-status disconnected">Not Connected</span>
     </div>
-
     <div class="slots-container">
-      <h3>Available Time Slots:</h3>
+      <h3 style="font-weight:700;font-size:20px;margin:2px 0 14px 0;color:#1976d2;letter-spacing:0.1em;">Available Slots</h3>
       <div id="slotsContainer">
-        <p>Select a doctor and date to see available appointments</p>
+        <p style="font-size:17px;color:#888;margin-top:13px;">Select a doctor and date to view slots</p>
       </div>
     </div>
-
     <div class="actions">
       <button id="reserveBtn" disabled>Reserve Selected Slot</button>
       <button id="confirmBtn" disabled>Confirm Reservation</button>
       <button id="cancelBtn" disabled>Cancel Reservation</button>
     </div>
-
     <div id="statusMessage" class="status"></div>
   </div>
 
-  <!-- Confirmation Modal -->
   <div id="confirmModal" class="modal">
     <div class="modal-content">
-      <p>Slot <span id="modalTime"></span> is reserved for you. What would you like to do?</p>
+      <p style="font-size:18px;font-weight:700;margin-bottom:22px;">
+        Slot <span id="modalTime"></span> is reserved for you.<br>What would you like to do?
+      </p>
       <button id="modalConfirmBtn">Confirm Booking</button>
       <button id="modalCancelBtn">Cancel Reservation</button>
-      <button id="modalCloseBtn">Close</button>
+      <button id="modalCloseBtn" style="color:#444;background:#e3e6ea;">Close</button>
     </div>
   </div>
   <script src="config.js"></script>
@@ -260,6 +328,11 @@
       await loadDoctors();
       checkForFamilyBooking();
     });
+
+    document.getElementById('backBtn').onclick = function() {
+  window.history.back();
+};
+
 
     function showStatus(message, isError = false) {
       statusMessage.textContent = message;
@@ -364,7 +437,7 @@
         const url = `${API_BASE_URL}/available_appointment?doctor_id=${selectedDoctorId}&app_date=${selectedDate}`;
         const slots = await fetchWithAuth(url);
 
-        slotsContainer.innerHTML = "<h3>Available Time Slots:</h3>";
+        slotsContainer.innerHTML = "";
         selectedSlot = null;
         ownReservedKey = null;
         disableActionButtons();

@@ -22,8 +22,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 import colorlog
 import traceback
-from datetime import datetime, date
-import time
+from datetime import datetime, date, time
+import time as t
 import redis.asyncio as redis
 import asyncio
 from contextlib import asynccontextmanager
@@ -153,7 +153,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         
         # Rate limit admin endpoints
         if path.startswith("/admin/"):
-            current_time = time.time()
+            current_time = t.time()
             last_logged = self.rate_limited.get(path, 0)
             
             if current_time - last_logged < self.rate_limit_seconds:
@@ -165,7 +165,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         return True
     
     async def dispatch(self, request: Request, call_next):
-        start_time = time.time()
+        start_time = t.time()
         
         # Get client IP address with proper proxy header handling
         client_host = request.client.host if request.client else "unknown"
@@ -190,7 +190,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         
         if should_log:
             # Calculate processing time
-            process_time = time.time() - start_time
+            process_time = t.time() - start_time
             
             # Create log entry in the desired format
             timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
@@ -311,19 +311,35 @@ def all_users(db : session = Depends(get_db)):
 def create_appointment(appointment : schemas.BookAppointment, db : session = Depends(get_db), current_user = Depends(auth.get_current_user)):
     return crud.book_appointment(db, appointment, current_user.id)
 
-@app.get('/get_all_appointments')
-def get_all_appointments(doctor = Depends(auth.check_doctor)):
-    result = []
+def get_appointment_end(start_dt: datetime, doctor_id: int, db: session):
+    day_of_week = start_dt.weekday()  # Monday=0
+    availability = db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.doctor_id == doctor_id,
+        models.DoctorAvailability.day_of_week == day_of_week,
+        models.DoctorAvailability.is_active == True
+    ).first()
 
+    if availability:
+        duration_minutes = availability.appointment_duration
+    else:
+        duration_minutes = 30  # fallback default duration
+
+    end_dt = start_dt + timedelta(minutes=duration_minutes)
+    return end_dt
+
+@app.get('/get_all_appointments')
+def get_all_appointments(doctor = Depends(auth.check_doctor), db: session = Depends(get_db)):
+    result = []
     for app in doctor.doctor_appointments:
+        start = app.date_time
+        end = get_appointment_end(start, doctor.id, db)
         result.append({
             "id": app.id,
             "title": app.patient.name,
-            "start": app.date_time.isoformat(),
-            "end": (app.date_time + timedelta(hours=30)).isoformat(),
+            "start": start.isoformat(),
+            "end": end.isoformat(),
             "status": app.status.value
         })
-
     return result
 
 @app.put('/appointment_response')
@@ -375,39 +391,143 @@ def get_vitals(patient = Depends(auth.check_patient), db: session = Depends(get_
     
     return vitals
 
-@app.post('/doctor/set_availability')
-def set_doctor_availability(
-    request: schemas.SetAvailabilityRequest, 
+# @app.post('/doctor/set_availability')
+# def set_doctor_availability(
+#     request: schemas.SetAvailabilityRequest, 
+#     doctor = Depends(auth.check_doctor),
+#     db: session = Depends(get_db)
+# ):
+#     return crud.set_doctor_availability(request, doctor.id, db)
+
+# @app.get('/doctor/availability')
+# def get_doctor_availability(
+#     doctor = Depends(auth.check_doctor),  # Ensure only doctors can access
+#     db: session = Depends(get_db)
+# ):
+#     """
+#     Get the doctor's availability settings (working hours, appointment duration, etc.)
+#     """
+#     # Query the doctor's availability from database
+#     availability_records = db.query(models.DoctorAvailability).filter(
+#         models.DoctorAvailability.doctor_id == doctor.id,
+#         models.DoctorAvailability.is_active == True
+#     ).all()
+    
+#     if not availability_records:
+#         # Return empty response if no availability set
+#         return {
+#             "availabilities": [],
+#             "message": "No availability settings found. Please set your working hours."
+#         }
+    
+#     # Format the response
+#     availabilities = []
+#     for record in availability_records:
+#         availabilities.append({
+#             "day_of_week": record.day_of_week,
+#             "start_time": record.start_time.strftime("%H:%M"),
+#             "end_time": record.end_time.strftime("%H:%M"),
+#             "appointment_duration": record.appointment_duration,
+#             "break_start": record.break_start.strftime("%H:%M") if record.break_start else None,
+#             "break_end": record.break_end.strftime("%H:%M") if record.break_end else None
+#         })
+    
+#     return {
+#         "availabilities": availabilities,
+#         "doctor_id": doctor.id,
+#         "doctor_name": doctor.name
+#     }
+
+def ensure_time(val):
+    if isinstance(val, time):
+        return val
+    elif isinstance(val, str):
+        return datetime.strptime(val, "%H:%M").time()
+    else:
+        raise ValueError("Invalid time format")
+
+@app.put('/doctor/availability')
+def update_doctor_availability(
+    availability: schemas.AvailabilityItem,  # one availability object
+    doctor = Depends(auth.check_doctor),
+    db: session = Depends(get_db),
+):
+    # Check if availability with same day_of_week exists
+    existing = db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.doctor_id == doctor.id,
+        models.DoctorAvailability.day_of_week == availability.day_of_week,
+        models.DoctorAvailability.is_active == True
+    ).first()
+
+    def parse_time(val):
+        if isinstance(val, str):
+            return datetime.strptime(val, "%H:%M").time()
+        return val
+
+    if existing:
+        # Update existing record
+        existing.start_time = parse_time(availability.start_time)
+        existing.end_time = parse_time(availability.end_time)
+        existing.appointment_duration = availability.appointment_duration
+        existing.break_start = parse_time(availability.break_start) if availability.break_start else None
+        existing.break_end = parse_time(availability.break_end) if availability.break_end else None
+        db.add(existing)
+    else:
+        # Create new
+        new_avail = models.DoctorAvailability(
+            doctor_id=doctor.id,
+            day_of_week=availability.day_of_week,
+            start_time=parse_time(availability.start_time),
+            end_time=parse_time(availability.end_time),
+            appointment_duration=availability.appointment_duration,
+            break_start=parse_time(availability.break_start) if availability.break_start else None,
+            break_end=parse_time(availability.break_end) if availability.break_end else None,
+            is_active=True
+        )
+        db.add(new_avail)
+
+    db.commit()
+
+    return {"message": "Availability updated"}
+
+@app.delete('/doctor/availability/{avail_id}')
+def delete_doctor_availability(
+    avail_id: int,
     doctor = Depends(auth.check_doctor),
     db: session = Depends(get_db)
 ):
-    return crud.set_doctor_availability(request, doctor.id, db)
+    availability = db.query(models.DoctorAvailability).filter(
+        models.DoctorAvailability.id == avail_id,
+        models.DoctorAvailability.doctor_id == doctor.id
+    ).first()
+    
+    if not availability:
+        raise HTTPException(status_code=404, detail="Availability not found")
+    
+    db.delete(availability)
+    db.commit()
+    return {"message": "Availability deleted successfully"}
 
 @app.get('/doctor/availability')
 def get_doctor_availability(
-    doctor = Depends(auth.check_doctor),  # Ensure only doctors can access
+    doctor = Depends(auth.check_doctor),
     db: session = Depends(get_db)
 ):
-    """
-    Get the doctor's availability settings (working hours, appointment duration, etc.)
-    """
-    # Query the doctor's availability from database
     availability_records = db.query(models.DoctorAvailability).filter(
         models.DoctorAvailability.doctor_id == doctor.id,
         models.DoctorAvailability.is_active == True
     ).all()
     
     if not availability_records:
-        # Return empty response if no availability set
         return {
             "availabilities": [],
             "message": "No availability settings found. Please set your working hours."
         }
     
-    # Format the response
     availabilities = []
     for record in availability_records:
         availabilities.append({
+            "id": record.id,  # Important: include ID for delete
             "day_of_week": record.day_of_week,
             "start_time": record.start_time.strftime("%H:%M"),
             "end_time": record.end_time.strftime("%H:%M"),
@@ -421,6 +541,7 @@ def get_doctor_availability(
         "doctor_id": doctor.id,
         "doctor_name": doctor.name
     }
+
 
 @app.get('/available_appointment')
 async def get_available_appointment(
