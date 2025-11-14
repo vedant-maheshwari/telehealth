@@ -92,14 +92,14 @@ class User(Base):
 
     patient_permissions: Mapped[List["FamilyPermissions"]] = relationship(
         "FamilyPermissions",
-        foreign_keys="FamilyPermissions.patient_id",  # ✅ String reference
+        foreign_keys="FamilyPermissions.patient_id",  
         back_populates="patient",
         cascade="all, delete-orphan"
     )
     
     family_member_permissions: Mapped[List["FamilyPermissions"]] = relationship(
         "FamilyPermissions",
-        foreign_keys="FamilyPermissions.family_member_id",  # ✅ String reference
+        foreign_keys="FamilyPermissions.family_member_id",  
         back_populates="family_member",
         cascade="all, delete-orphan"
     )
@@ -151,12 +151,12 @@ class FamilyPermissions(Base):
     # FIXED: Explicit foreign_keys specification
     patient: Mapped["User"] = relationship(
         "User", 
-        foreign_keys=[patient_id],  # ✅ Specify which foreign key
+        foreign_keys=[patient_id],  
         back_populates="patient_permissions"
     )
     family_member: Mapped["User"] = relationship(
         "User", 
-        foreign_keys=[family_member_id],  # ✅ Specify which foreign key
+        foreign_keys=[family_member_id],  
         back_populates="family_member_permissions"
     )
     

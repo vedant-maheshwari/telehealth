@@ -68,20 +68,6 @@ def get_all_patients(db : session):
 def get_all_doctors(db : session):
     return db.query(models.User).filter(models.User.role == 'doctor')
 
-
-# def book_appointment(db : session, appointment : schemas.BookAppointment, patient_id : int):
-#     create_appointment = models.Appointments(
-#         patient_id = patient_id,
-#         doctor_id = appointment.doctor_id,
-#         date_time = appointment.appointment_date,
-#         status = models.Status.PENDING
-#     )
-
-#     db.add(create_appointment)
-#     db.commit()
-#     db.refresh(create_appointment)
-#     return create_appointment
-
 def book_appointment(db: session, appointment: schemas.BookAppointment, patient_id: int):
     try:
         db_appointment = models.Appointments(
@@ -128,43 +114,6 @@ def appointment_response(db : session, response : schemas.AppointmentResponse):
     db.refresh(appointment)
     return appointment
 
-# def add_vital(vital : schemas.Vitals_update, doctor_id : int, db : session):
-#     add_patient = db.query(models.User).filter(models.User.email == vital.patient_email).first()
-#     if not add_patient:
-#         return None
-#     add_vital = models.Vitals(
-#         patient_id = add_patient.id,
-#         doctor_id = doctor_id,
-#         bp = vital.bp
-#     )
-#     db.add(add_vital)
-#     db.commit()
-#     db.refresh(add_vital)
-#     return add_vital
-
-# def get_vitals(patient : models.User):
-#     return patient.vitals
-
-
-# def set_doctor_availability(
-#     request: schemas.DoctorAvailability, 
-#     doctor_id : int,
-#     db: session
-# ):
-#     doctor_availability = models.DoctorAvailability(
-#         doctor_id= doctor_id,
-#         day_of_week=request.day_of_week,
-#         start_time=request.start_time,
-#         end_time=request.end_time,
-#         appointment_duration=request.appointment_duration,
-#         break_start=request.break_start,
-#         break_end=request.break_end
-#     )
-
-#     db.add(doctor_availability)
-#     db.commit()
-#     db.refresh(doctor_availability)
-#     return doctor_availability
 
 def set_doctor_availability(
     request: schemas.SetAvailabilityRequest, 
