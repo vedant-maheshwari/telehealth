@@ -90,8 +90,26 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
 
 # Redis configuration
+# REDIS_URL = os.getenv("REDIS_URL")
+# redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+
+# Redis configuration with error handling
 REDIS_URL = os.getenv("REDIS_URL")
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+
+if not REDIS_URL:
+    logging.error("❌ REDIS_URL not set!")
+    REDIS_URL = "redis://localhost:6379/0"  # Fallback for local dev
+    logging.warning("⚠️ Using fallback Redis URL (this won't work on Railway)")
+
+logging.info(f"📍 Redis URL: {REDIS_URL[:50]}...")  # Log first 50 chars
+
+try:
+    redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+    logging.info("✅ Redis client created successfully")
+except Exception as e:
+    logging.error(f"❌ Failed to create Redis client: {e}")
+    raise
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request : Request, exc : Exception):
@@ -110,15 +128,24 @@ async def global_exception_handler(request : Request, exc : Exception):
     )
 
 # UPDATED CORS CONFIGURATION - Prioritize HTTPS
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=[
+#         "https://telehealthapp.azurewebsites.net",  # Your Azure domain (HTTPS first)
+#         "https://*.azurewebsites.net",  # Allow all Azure subdomains (HTTPS)
+#         "http://localhost:3000",  # Local development
+#         "http://localhost:8080", 
+#         "http://127.0.0.1:8000",
+#         "http://localhost:8000"
+#     ],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://telehealthapp.azurewebsites.net",  # Your Azure domain (HTTPS first)
-        "https://*.azurewebsites.net",  # Allow all Azure subdomains (HTTPS)
-        "http://localhost:3000",  # Local development
-        "http://localhost:8080", 
-        "http://127.0.0.1:8000",
-    ],
+    allow_origins=["*"],  # or specify your phone's IP URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -390,53 +417,6 @@ def get_vitals(patient = Depends(auth.check_patient), db: session = Depends(get_
     ).order_by(models.Vitals.timestamp.desc()).all()
     
     return vitals
-
-# @app.post('/doctor/set_availability')
-# def set_doctor_availability(
-#     request: schemas.SetAvailabilityRequest, 
-#     doctor = Depends(auth.check_doctor),
-#     db: session = Depends(get_db)
-# ):
-#     return crud.set_doctor_availability(request, doctor.id, db)
-
-# @app.get('/doctor/availability')
-# def get_doctor_availability(
-#     doctor = Depends(auth.check_doctor),  # Ensure only doctors can access
-#     db: session = Depends(get_db)
-# ):
-#     """
-#     Get the doctor's availability settings (working hours, appointment duration, etc.)
-#     """
-#     # Query the doctor's availability from database
-#     availability_records = db.query(models.DoctorAvailability).filter(
-#         models.DoctorAvailability.doctor_id == doctor.id,
-#         models.DoctorAvailability.is_active == True
-#     ).all()
-    
-#     if not availability_records:
-#         # Return empty response if no availability set
-#         return {
-#             "availabilities": [],
-#             "message": "No availability settings found. Please set your working hours."
-#         }
-    
-#     # Format the response
-#     availabilities = []
-#     for record in availability_records:
-#         availabilities.append({
-#             "day_of_week": record.day_of_week,
-#             "start_time": record.start_time.strftime("%H:%M"),
-#             "end_time": record.end_time.strftime("%H:%M"),
-#             "appointment_duration": record.appointment_duration,
-#             "break_start": record.break_start.strftime("%H:%M") if record.break_start else None,
-#             "break_end": record.break_end.strftime("%H:%M") if record.break_end else None
-#         })
-    
-#     return {
-#         "availabilities": availabilities,
-#         "doctor_id": doctor.id,
-#         "doctor_name": doctor.name
-#     }
 
 def ensure_time(val):
     if isinstance(val, time):
